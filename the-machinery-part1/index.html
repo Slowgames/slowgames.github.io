@@ -12,9 +12,9 @@
   <title>Slowgames</title>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;print.css" media="print">
-  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;poole.css">
-  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;hyde.css">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;print.css" media="print">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;poole.css">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;hyde.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 
   
@@ -29,7 +29,7 @@
     <div class="container sidebar-sticky">
       <div class="sidebar-about">
         
-        <a href="https:&#x2F;&#x2F;slowgames.netlify.app">
+        <a href="https:&#x2F;&#x2F;slowgames.github.io">
           <h1>Slowgames</h1>
         </a>
         
@@ -93,13 +93,13 @@ drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
 <p>Nice, a README. A 61kb README full of excellent information about how to work with The Machinery, the key concepts introduce and outline the ideas behind how data should be worked with, ideas for scene organization, introductions to the primary editor modes, and the basics of extending the engine via the plugin system.</p>
 <p>After going over the README a bit and getting that early feel for things, it's time to run the editor and play with some samples.</p>
 <p>When you open <code>bin\the-machinery.exe</code> You get the default scene:</p>
-<p><img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-default-scene.png" alt="the-machinery-default-scene" /></p>
+<p><img src="https://slowgames.github.io/the-machinery-part1/the-machinery-beta-default-scene.png" alt="the-machinery-default-scene" /></p>
 <blockquote>
 <p>That isn't entirely true, what you get is a &quot;Windows Defender&quot; warning about this being an unsigned binary or something. Which is perfectly reasonable given the beta status.</p>
 </blockquote>
 <p>From here you can easily load any of the sample projects and dig around.</p>
-<p>The pong example provides an interesting look into using the <code>Graph</code> component, which is their visual scripting system. <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-pong.png" alt="pong_screenshot" /></p>
-<p>The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-third-person.png" alt="third_person_screenshot" /></p>
+<p>The pong example provides an interesting look into using the <code>Graph</code> component, which is their visual scripting system. <img src="https://slowgames.github.io/the-machinery-part1/the-machinery-beta-pong.png" alt="pong_screenshot" /></p>
+<p>The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. <img src="https://slowgames.github.io/the-machinery-part1/the-machinery-beta-third-person.png" alt="third_person_screenshot" /></p>
 <p>The other samples all try to demonstrate particular available systems or features. There is a lot to take in, the samples are focused and good at their job I think.</p>
 <h2 id="building-a-component">Building a Component</h2>
 <p>Our Machinery have a nice <a href="https://ourmachinery.com/post/one-button-source-code-builds/">post</a> explaining their thinking behind the provided build tools.</p>
@@ -109,7 +109,7 @@ drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
 </blockquote>
 <p>It does all of this quickly and easily, but also in a bit of an annoying way. The first thing I did was run around the SDK and run tmbuild in any directory that contained a <code>premake5.lua</code>. But the result, aside from everything building fine and dandy, is that the SDK is now litered with extraneous folders and solutions.</p>
 <p>For every build you'll end up with a <code>lib</code> folder which contains 7zip and premake. You'll also get a Visual Studio solution next to your premake script and a folder named <code>build</code> with any project files referenced by the solution as well as a folder for intermediate build outputs. For now I'm just going to accept that as it is and contiue on my merry way.</p>
-<p>We can use the editor to initialize a new component for us (including a premake script :+1:). <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-new-plugin.png" alt="new_component" /></p>
+<p>We can use the editor to initialize a new component for us (including a premake script :+1:). <img src="https://slowgames.github.io/the-machinery-part1/the-machinery-beta-new-plugin.png" alt="new_component" /></p>
 <p>As someone new to premake it's a wallop to take in, but thankfully some key lines are easy to spot at the bottom:</p>
 <pre style="background-color:#2b303b;">
 <code><span style="color:#bf616a;">project </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">foo_component</span><span style="color:#c0c5ce;">&quot;

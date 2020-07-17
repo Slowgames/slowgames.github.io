@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://slowgames.netlify.app/</loc>
+        <loc>https://slowgames.github.io/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/init/</loc>
+        <loc>https://slowgames.github.io/init/</loc>
         <lastmod>2020-07-11</lastmod>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/</loc>
+        <loc>https://slowgames.github.io/tags/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/errata/</loc>
+        <loc>https://slowgames.github.io/tags/errata/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/errata/page/1/</loc>
+        <loc>https://slowgames.github.io/tags/errata/page/1/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/gamedev/</loc>
+        <loc>https://slowgames.github.io/tags/gamedev/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/gamedev/page/1/</loc>
+        <loc>https://slowgames.github.io/tags/gamedev/page/1/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/the-machinery/</loc>
+        <loc>https://slowgames.github.io/tags/the-machinery/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/tags/the-machinery/page/1/</loc>
+        <loc>https://slowgames.github.io/tags/the-machinery/page/1/</loc>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/the-machinery-part1/</loc>
+        <loc>https://slowgames.github.io/the-machinery-part1/</loc>
         <lastmod>2020-07-14</lastmod>
     </url>
     <url>
-        <loc>https://slowgames.netlify.app/the-machinery-part2/</loc>
+        <loc>https://slowgames.github.io/the-machinery-part2/</loc>
         <lastmod>2020-07-14</lastmod>
     </url>
 </urlset>

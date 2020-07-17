@@ -2,17 +2,17 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
 	<title>Slowgames - the-machinery</title>
 	<subtitle>Building Things. Making Stuff. Procgen.</subtitle>
-	<link href="https://slowgames.netlify.app/tags/the-machinery/atom.xml" rel="self" type="application/atom+xml"/>
-	<link href="https://slowgames.netlify.app"/>
+	<link href="https://slowgames.github.io/tags/the-machinery/atom.xml" rel="self" type="application/atom+xml"/>
+	<link href="https://slowgames.github.io"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
 	<updated>2020-07-14T00:00:00+00:00</updated>
-	<id>https://slowgames.netlify.app/tags/the-machinery/atom.xml</id>
+	<id>https://slowgames.github.io/tags/the-machinery/atom.xml</id>
 	<entry xml:lang="en">
 		<title>The Machinery - Part 2</title>
 		<published>2020-07-14T00:00:00+00:00</published>
 		<updated>2020-07-14T00:00:00+00:00</updated>
-		<link href="https://slowgames.netlify.app/the-machinery-part2/" type="text/html"/>
-		<id>https://slowgames.netlify.app/the-machinery-part2/</id>
+		<link href="https://slowgames.github.io/the-machinery-part2/" type="text/html"/>
+		<id>https://slowgames.github.io/the-machinery-part2/</id>
 		<content type="html">&lt;h2 id=&quot;using-the-environment&quot;&gt;Using the environment&lt;&#x2F;h2&gt;
 &lt;p&gt;In the &lt;a href=&quot;&#x2F;the-machinery-part1&quot;&gt;previous post&lt;&#x2F;a&gt; I mentioned how I found it annoying that everytime I built something, a lib folder with redundant copies of premake and 7zip were being downloaded. After mentioning this on the forums, Niklas clarified that using the &lt;code&gt;TM_LIB_DIR&lt;&#x2F;code&gt; will solve this problem for you.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;code&gt;tmbuild&lt;&#x2F;code&gt; expects you to have defined the environment variable &lt;code&gt;TM_SDK_DIR&lt;&#x2F;code&gt; already and rather than set environment vars globally like this I tend to use a convention of having a &lt;code&gt;.env&lt;&#x2F;code&gt; or &lt;code&gt;.env.bat&lt;&#x2F;code&gt; file in the root of a project or repo. So in this case my env setup looks like:&lt;&#x2F;p&gt;
@@ -32,7 +32,7 @@ set PATH=%TM_SDK_DIR%\bin;%PATH%
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Then I run whatever editor or IDE I&#x27;m planning to use. &lt;em&gt;Presently it&#x27;s been VS Code since it seems like the least effort to get working.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;I also enquired about the clang format setup being used by Our Machinery on the forums. The defaults for VS Code were wildy different. A helpful user shared their setup based on something provided on the Discord server and I modified it ever so slightly. If you&#x27;d like to see it, then &lt;a href=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part2&#x2F;clang-format.txt&quot;&gt;here&lt;&#x2F;a&gt; ya go.&lt;&#x2F;p&gt;
+&lt;p&gt;I also enquired about the clang format setup being used by Our Machinery on the forums. The defaults for VS Code were wildy different. A helpful user shared their setup based on something provided on the Discord server and I modified it ever so slightly. If you&#x27;d like to see it, then &lt;a href=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part2&#x2F;clang-format.txt&quot;&gt;here&lt;&#x2F;a&gt; ya go.&lt;&#x2F;p&gt;
 &lt;&#x2F;blockquote&gt;
 &lt;h2 id=&quot;organizing-the-workspace-choosing-an-approach&quot;&gt;Organizing the workspace, choosing an approach&lt;&#x2F;h2&gt;
 &lt;p&gt;With that sorted out I want to decide how to actually structure any experiments.&lt;&#x2F;p&gt;
@@ -78,8 +78,8 @@ tmbuild completed in: 6.269 s
 		<title>The Machinery - Part 1</title>
 		<published>2020-07-12T00:00:00+00:00</published>
 		<updated>2020-07-14T00:00:00+00:00</updated>
-		<link href="https://slowgames.netlify.app/the-machinery-part1/" type="text/html"/>
-		<id>https://slowgames.netlify.app/the-machinery-part1/</id>
+		<link href="https://slowgames.github.io/the-machinery-part1/" type="text/html"/>
+		<id>https://slowgames.github.io/the-machinery-part1/</id>
 		<content type="html">&lt;h2 id=&quot;intro&quot;&gt;Intro&lt;&#x2F;h2&gt;
 &lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;&quot;&gt;The Machinery&lt;&#x2F;a&gt; is an exciting SDK and toolset that is currently in a closed beta period and I was recently given access (&lt;em&gt;anybody can &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;beta.html&quot;&gt;apply&lt;&#x2F;a&gt;, I have no contacts or special credits to my name&lt;&#x2F;em&gt;).&lt;&#x2F;p&gt;
 &lt;p&gt;There are many reasons why The Machinery is interesting and I&#x27;ll try to avoid repeating things you can read on the &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;&quot;&gt;blog&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
@@ -115,13 +115,13 @@ drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
 &lt;p&gt;Nice, a README. A 61kb README full of excellent information about how to work with The Machinery, the key concepts introduce and outline the ideas behind how data should be worked with, ideas for scene organization, introductions to the primary editor modes, and the basics of extending the engine via the plugin system.&lt;&#x2F;p&gt;
 &lt;p&gt;After going over the README a bit and getting that early feel for things, it&#x27;s time to run the editor and play with some samples.&lt;&#x2F;p&gt;
 &lt;p&gt;When you open &lt;code&gt;bin\the-machinery.exe&lt;&#x2F;code&gt; You get the default scene:&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-default-scene.png&quot; alt=&quot;the-machinery-default-scene&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part1&#x2F;the-machinery-beta-default-scene.png&quot; alt=&quot;the-machinery-default-scene&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;That isn&#x27;t entirely true, what you get is a &amp;quot;Windows Defender&amp;quot; warning about this being an unsigned binary or something. Which is perfectly reasonable given the beta status.&lt;&#x2F;p&gt;
 &lt;&#x2F;blockquote&gt;
 &lt;p&gt;From here you can easily load any of the sample projects and dig around.&lt;&#x2F;p&gt;
-&lt;p&gt;The pong example provides an interesting look into using the &lt;code&gt;Graph&lt;&#x2F;code&gt; component, which is their visual scripting system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-pong.png&quot; alt=&quot;pong_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-third-person.png&quot; alt=&quot;third_person_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The pong example provides an interesting look into using the &lt;code&gt;Graph&lt;&#x2F;code&gt; component, which is their visual scripting system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part1&#x2F;the-machinery-beta-pong.png&quot; alt=&quot;pong_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part1&#x2F;the-machinery-beta-third-person.png&quot; alt=&quot;third_person_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;The other samples all try to demonstrate particular available systems or features. There is a lot to take in, the samples are focused and good at their job I think.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;building-a-component&quot;&gt;Building a Component&lt;&#x2F;h2&gt;
 &lt;p&gt;Our Machinery have a nice &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;one-button-source-code-builds&#x2F;&quot;&gt;post&lt;&#x2F;a&gt; explaining their thinking behind the provided build tools.&lt;&#x2F;p&gt;
@@ -131,7 +131,7 @@ drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
 &lt;&#x2F;blockquote&gt;
 &lt;p&gt;It does all of this quickly and easily, but also in a bit of an annoying way. The first thing I did was run around the SDK and run tmbuild in any directory that contained a &lt;code&gt;premake5.lua&lt;&#x2F;code&gt;. But the result, aside from everything building fine and dandy, is that the SDK is now litered with extraneous folders and solutions.&lt;&#x2F;p&gt;
 &lt;p&gt;For every build you&#x27;ll end up with a &lt;code&gt;lib&lt;&#x2F;code&gt; folder which contains 7zip and premake. You&#x27;ll also get a Visual Studio solution next to your premake script and a folder named &lt;code&gt;build&lt;&#x2F;code&gt; with any project files referenced by the solution as well as a folder for intermediate build outputs. For now I&#x27;m just going to accept that as it is and contiue on my merry way.&lt;&#x2F;p&gt;
-&lt;p&gt;We can use the editor to initialize a new component for us (including a premake script :+1:). &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-new-plugin.png&quot; alt=&quot;new_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;We can use the editor to initialize a new component for us (including a premake script :+1:). &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part1&#x2F;the-machinery-beta-new-plugin.png&quot; alt=&quot;new_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;As someone new to premake it&#x27;s a wallop to take in, but thankfully some key lines are easy to spot at the bottom:&lt;&#x2F;p&gt;
 &lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
 &lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;project &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;foo_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;

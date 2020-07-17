@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://slowgames.netlify.app/sitemap.xml
+Sitemap: https://slowgames.github.io/sitemap.xml
