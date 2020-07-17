@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <!-- viewport-fit=cover is to support iPhone X rounded corners and notch in landscape-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+
+  <title>Slowgames</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;print.css" media="print">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;poole.css">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+
+  
+  
+</head>
+
+<body class=" ">
+  
+  <div class="sidebar">
+    <div class="container sidebar-sticky">
+      <div class="sidebar-about">
+        
+        <a href="https:&#x2F;&#x2F;slowgames.netlify.app">
+          <h1>Slowgames</h1>
+        </a>
+        
+        <p class="lead">Building Things. Making Stuff. Procgen.</p>
+        
+        
+      </div>
+
+      <ul class="sidebar-nav">
+        
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;github.com&#x2F;photex">Github</a></li>
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;twitter.com&#x2F;_photex_">Twitter</a></li>
+        
+        
+      </ul>
+
+      © 2020 Chip Collier
+    </div>
+  </div>
+  
+
+  <div class="content container">
+    
+<div class="post">
+  <h1 class="post-title">The Machinery - Part 1</h1>
+  <span class="post-date">2020-07-12</span>
+  <h2 id="intro">Intro</h2>
+<p><a href="https://ourmachinery.com/">The Machinery</a> is an exciting SDK and toolset that is currently in a closed beta period and I was recently given access (<em>anybody can <a href="https://ourmachinery.com/beta.html">apply</a>, I have no contacts or special credits to my name</em>).</p>
+<p>There are many reasons why The Machinery is interesting and I'll try to avoid repeating things you can read on the <a href="https://ourmachinery.com/post/">blog</a>.</p>
+<p>Two things stand out to me and motivate exploration:</p>
+<ul>
+<li>The SDK and engine are primarily developed in C with some excellent <a href="https://ourmachinery.com/post/physical-design/">constraints</a> to keep the design clean. This provides developers with <a href="https://ourmachinery.com/post/creating-cross-language-apis/">interesting possibilities</a> right out of the gate.</li>
+<li><a href="https://ourmachinery.com/post/little-machines-working-together-part-1/">Modularity</a> is a principal goal for all aspects of the SDK.</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<p>The invitation to the beta comes in the form of an invitation to their forums. It's powered by <a href="https://www.discourse.org/">Discourse</a> which is a nice and familiar platform these days.</p>
+<p>Beta releases, like their alpha releases before that, are distributed as attachments to associated topics in the forum. The current beta package is a <em>delightful</em> 34Mb in size! It only targets Windows initially. Internally they support other platforms, but sensibly the beta releases are limiting the platforms to focus on more important things.</p>
+<p><em>In addition to the SDK archive, there is a sample projects archive that's 165Mb. This consists of a series of projects with asset data actually baked into project files, and a set of focused plugin examples with source code.</em></p>
+<p>Once downloaded I don't have any idea how the SDK is meant to be used or organized so I just plopped it into <code>c:\projects\slowgames</code> which is my monorepo for all things slowgames.</p>
+<blockquote>
+<p>I have been using Perforce for this monorepo for a while, however recently I started using PlasticSCM to see if I like it a bit more given it's git-like proclivities. So far, the answer is 'meh'.</p>
+</blockquote>
+<p>So, now with these archives downloaded and unpacked let's continue by looking at the SDK contents:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">c:\projects\slowgames\OurMachinery&gt;ls -l
+total 76
+-rw-r--r-- 1 phote phote 62326 Jul  9 18:25 README.md.html
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 bin
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 code
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 doc
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 headers
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 lib
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 samples
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
+</span></code></pre>
+<blockquote>
+<p>I really really hate the Windows 10 desperate need to chop off the 'x' from my username. What the hell is the reason for that?</p>
+</blockquote>
+<p>Nice, a README. A 61kb README full of excellent information about how to work with The Machinery, the key concepts introduce and outline the ideas behind how data should be worked with, ideas for scene organization, introductions to the primary editor modes, and the basics of extending the engine via the plugin system.</p>
+<p>After going over the README a bit and getting that early feel for things, it's time to run the editor and play with some samples.</p>
+<p>When you open <code>bin\the-machinery.exe</code> You get the default scene:</p>
+<p><img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-default-scene.png" alt="the-machinery-default-scene" /></p>
+<blockquote>
+<p>That isn't entirely true, what you get is a &quot;Windows Defender&quot; warning about this being an unsigned binary or something. Which is perfectly reasonable given the beta status.</p>
+</blockquote>
+<p>From here you can easily load any of the sample projects and dig around.</p>
+<p>The pong example provides an interesting look into using the <code>Graph</code> component, which is their visual scripting system. <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-pong.png" alt="pong_screenshot" /></p>
+<p>The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-third-person.png" alt="third_person_screenshot" /></p>
+<p>The other samples all try to demonstrate particular available systems or features. There is a lot to take in, the samples are focused and good at their job I think.</p>
+<h2 id="building-a-component">Building a Component</h2>
+<p>Our Machinery have a nice <a href="https://ourmachinery.com/post/one-button-source-code-builds/">post</a> explaining their thinking behind the provided build tools.</p>
+<p>The short version is that The Machinery includes a tool called <code>tmbuild</code> that generates projects with premake, runs the build, and possibly any unit tests in the plugin you're building.</p>
+<blockquote>
+<p>I've never used premake so this is all a bit new to me. I'm disappointed that I'm not able to easily use CLion. I'm comfortable with VS Code and Visual Studio. I just consider CLion and Emacs to be better at editing code. My current Emacs setup for working with C and C++ relies on a clang compilation database to be available and without it, VS Code is just the better choice. Can premake generate compilation databases?</p>
+</blockquote>
+<p>It does all of this quickly and easily, but also in a bit of an annoying way. The first thing I did was run around the SDK and run tmbuild in any directory that contained a <code>premake5.lua</code>. But the result, aside from everything building fine and dandy, is that the SDK is now litered with extraneous folders and solutions.</p>
+<p>For every build you'll end up with a <code>lib</code> folder which contains 7zip and premake. You'll also get a Visual Studio solution next to your premake script and a folder named <code>build</code> with any project files referenced by the solution as well as a folder for intermediate build outputs. For now I'm just going to accept that as it is and contiue on my merry way.</p>
+<p>We can use the editor to initialize a new component for us (including a premake script :+1:). <img src="https://slowgames.netlify.app/the-machinery-part1/the-machinery-beta-new-plugin.png" alt="new_component" /></p>
+<p>As someone new to premake it's a wallop to take in, but thankfully some key lines are easy to spot at the bottom:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#bf616a;">project </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">foo_component</span><span style="color:#c0c5ce;">&quot;
+    </span><span style="color:#bf616a;">location </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">build/foo_component</span><span style="color:#c0c5ce;">&quot;
+    </span><span style="color:#bf616a;">targetname </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">tm_foo_component</span><span style="color:#c0c5ce;">&quot;    </span><span style="color:#bf616a;">kind </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">SharedLib</span><span style="color:#c0c5ce;">&quot;
+    </span><span style="color:#bf616a;">language </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">C++</span><span style="color:#c0c5ce;">&quot;
+    </span><span style="color:#bf616a;">files </span><span style="color:#c0c5ce;">{&quot;</span><span style="color:#a3be8c;">*.inl</span><span style="color:#c0c5ce;">&quot;, &quot;</span><span style="color:#a3be8c;">*.h</span><span style="color:#c0c5ce;">&quot;, &quot;</span><span style="color:#a3be8c;">*.c</span><span style="color:#c0c5ce;">&quot;}
+    </span><span style="color:#bf616a;">sysincludedirs </span><span style="color:#c0c5ce;">{ &quot;&quot; }
+    </span><span style="color:#bf616a;">filter </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">platforms:Win64</span><span style="color:#c0c5ce;">&quot;
+        </span><span style="color:#bf616a;">targetdir </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">$(TM_SDK_DIR)/bin/plugins</span><span style="color:#c0c5ce;">&quot;
+</span></code></pre>
+<p>So in the end, we have premake generating projects and setting the actual output to the SDK plugins folder. This means that it would likely be straight-forward to use another build system or project structure.</p>
+<p>Something about this makes me wonder what is expected for project organization. Should you vendor in the SDK per-project? It certainly seems that way.</p>
+<h2 id="going-forward">Going Forward</h2>
+<p>This is a difficult post to write because I've been mostly working from memory and trying to recap my process of fumbling around and starting to feel comfortable with everything. I don't want to copy and paste information you'd get in the README, or from their blog. And in general I have a lot of opinions and reactions I'm still chewing on a bit.</p>
+<p>In the next post I'll talk about how I've decided to structure my exploration for the time being, and we can look at a minimal component and play around with building and hot reloading. Posts should get a bit more focused after that.</p>
+
+</div>
+
+  </div>
+
+</body>
+
+</html>

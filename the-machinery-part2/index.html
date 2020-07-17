@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <!-- viewport-fit=cover is to support iPhone X rounded corners and notch in landscape-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+
+  <title>Slowgames</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;print.css" media="print">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;poole.css">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+
+  
+  
+</head>
+
+<body class=" ">
+  
+  <div class="sidebar">
+    <div class="container sidebar-sticky">
+      <div class="sidebar-about">
+        
+        <a href="https:&#x2F;&#x2F;slowgames.netlify.app">
+          <h1>Slowgames</h1>
+        </a>
+        
+        <p class="lead">Building Things. Making Stuff. Procgen.</p>
+        
+        
+      </div>
+
+      <ul class="sidebar-nav">
+        
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;github.com&#x2F;photex">Github</a></li>
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;twitter.com&#x2F;_photex_">Twitter</a></li>
+        
+        
+      </ul>
+
+      © 2020 Chip Collier
+    </div>
+  </div>
+  
+
+  <div class="content container">
+    
+<div class="post">
+  <h1 class="post-title">The Machinery - Part 2</h1>
+  <span class="post-date">2020-07-14</span>
+  <h2 id="using-the-environment">Using the environment</h2>
+<p>In the <a href="/the-machinery-part1">previous post</a> I mentioned how I found it annoying that everytime I built something, a lib folder with redundant copies of premake and 7zip were being downloaded. After mentioning this on the forums, Niklas clarified that using the <code>TM_LIB_DIR</code> will solve this problem for you.</p>
+<p><code>tmbuild</code> expects you to have defined the environment variable <code>TM_SDK_DIR</code> already and rather than set environment vars globally like this I tend to use a convention of having a <code>.env</code> or <code>.env.bat</code> file in the root of a project or repo. So in this case my env setup looks like:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">set TM_SDK_DIR=%cd%\OurMachinery
+set TM_LIB_DIR=%cd%\OurMachinery\lib
+
+set PATH=%TM_SDK_DIR%\bin;%PATH%
+</span></code></pre>
+<p>When I want to work on slowgames related stuff (that isn't using UE4 or something similarly self-contained), I source my env:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">call .env.bat
+</span></code></pre>
+<p>or on a posix-ish platform:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">source .env
+</span></code></pre>
+<p>Then I run whatever editor or IDE I'm planning to use. <em>Presently it's been VS Code since it seems like the least effort to get working.</em></p>
+<blockquote>
+<p>I also enquired about the clang format setup being used by Our Machinery on the forums. The defaults for VS Code were wildy different. A helpful user shared their setup based on something provided on the Discord server and I modified it ever so slightly. If you'd like to see it, then <a href="https://slowgames.netlify.app/the-machinery-part2/clang-format.txt">here</a> ya go.</p>
+</blockquote>
+<h2 id="organizing-the-workspace-choosing-an-approach">Organizing the workspace, choosing an approach</h2>
+<p>With that sorted out I want to decide how to actually structure any experiments.</p>
+<p>As I mentioned in the previous post, plugins are apparently expected all be loaded from <code>$(TM_SDK_DIR)/bin/plugins</code> and so far every premake script in the samples and SDK set that as the output directory.</p>
+<p>Is this the only place The Machinery can load plugins from? If so, then is it expected that any projects using The Machinery should vendor the SDK as part of the project?</p>
+<p>The answer is that, yes currently for the beta this is the case, however there are plans to have project specific plugin locations in the future so it doesn't appear to be expected that you'd be vendoring the SDK into every project.</p>
+<p>So how to proceed? What sort of layout and workflow isn't going to trigger an itch?</p>
+<p><em>If you're like me, then there probably isn't much that won't make you itch a bit.</em> So I decided initially to just make a top-level premake script and duplicate any other bits of the SDK or sample projects I wanted to refer to so that even if I decided to use Visual Studio instead of VS Code I'd have something handy to reference. Very soon after creating a new plugin project and setting that up, I realized what a mistake it was. :)</p>
+<p>Instead I just decided to make a project level premake script, accept that the output will go into the SDK for now, and not worry about having potential reference projects included in the Visual Studio solution.</p>
+<p>So in my repo I have a project folder, with a plugins subdirectory. In the project is a premake script which will define targets for any plugins. This approach is based on how the SDK <code>samples</code> project is setup as opposed to how the <code>sample_projects</code> setup is to have a premake script on a per-plugin basis.</p>
+<p>Any confusion early on regarding how you're <em>supposed</em> to do anything is largely the result of The Machinery being like a nice box of Lego instead of a set of choices followed by bumper rails to lead you to a set of pre-defined targets. You can do whatever you like and it'll <em>probably</em> be ok.</p>
+<p>To quickly summarize, my project root now looks like:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">c:\projects\slowgames\CosmicTrash&gt;fd
+Slowgames.sln
+libs.json
+plugins
+plugins\sprite_component
+plugins\sprite_component\sprite_component.c
+premake5.lua
+</span></code></pre>
+<p><code>sprite_component</code> is just a sample component created via the editor. For the curious, the output from tmbuild in project folder:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">c:\projects\slowgames\CosmicTrash&gt;tmbuild -c Release
+Building configurations...
+Running action &#39;vs2019&#39;...
+Generated build/sprite_component/sprite_component.vcxproj...
+Done (169ms).
+Microsoft (R) Build Engine version 16.6.0+5ff7b0c9e for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  sprite_component.c
+     Creating library c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.lib and object c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.exp
+  sprite_component.vcxproj -&gt; c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.dll
+
+-----------------------------
+tmbuild completed in: 6.269 s
+</span></code></pre>
+<p>And now in the <a href="/the-machinery-part3">next post</a> we can finally start looking at code.</p>
+
+</div>
+
+  </div>
+
+</body>
+
+</html>

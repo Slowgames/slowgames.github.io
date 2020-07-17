@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Slowgames - gamedev</title>
+	<subtitle>Building Things. Making Stuff. Procgen.</subtitle>
+	<link href="https://slowgames.netlify.app/tags/gamedev/atom.xml" rel="self" type="application/atom+xml"/>
+	<link href="https://slowgames.netlify.app"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>2020-07-14T00:00:00+00:00</updated>
+	<id>https://slowgames.netlify.app/tags/gamedev/atom.xml</id>
+	<entry xml:lang="en">
+		<title>The Machinery - Part 2</title>
+		<published>2020-07-14T00:00:00+00:00</published>
+		<updated>2020-07-14T00:00:00+00:00</updated>
+		<link href="https://slowgames.netlify.app/the-machinery-part2/" type="text/html"/>
+		<id>https://slowgames.netlify.app/the-machinery-part2/</id>
+		<content type="html">&lt;h2 id=&quot;using-the-environment&quot;&gt;Using the environment&lt;&#x2F;h2&gt;
+&lt;p&gt;In the &lt;a href=&quot;&#x2F;the-machinery-part1&quot;&gt;previous post&lt;&#x2F;a&gt; I mentioned how I found it annoying that everytime I built something, a lib folder with redundant copies of premake and 7zip were being downloaded. After mentioning this on the forums, Niklas clarified that using the &lt;code&gt;TM_LIB_DIR&lt;&#x2F;code&gt; will solve this problem for you.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;tmbuild&lt;&#x2F;code&gt; expects you to have defined the environment variable &lt;code&gt;TM_SDK_DIR&lt;&#x2F;code&gt; already and rather than set environment vars globally like this I tend to use a convention of having a &lt;code&gt;.env&lt;&#x2F;code&gt; or &lt;code&gt;.env.bat&lt;&#x2F;code&gt; file in the root of a project or repo. So in this case my env setup looks like:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;set TM_SDK_DIR=%cd%\OurMachinery
+set TM_LIB_DIR=%cd%\OurMachinery\lib
+
+set PATH=%TM_SDK_DIR%\bin;%PATH%
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;When I want to work on slowgames related stuff (that isn&#x27;t using UE4 or something similarly self-contained), I source my env:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;call .env.bat
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;or on a posix-ish platform:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;source .env
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then I run whatever editor or IDE I&#x27;m planning to use. &lt;em&gt;Presently it&#x27;s been VS Code since it seems like the least effort to get working.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I also enquired about the clang format setup being used by Our Machinery on the forums. The defaults for VS Code were wildy different. A helpful user shared their setup based on something provided on the Discord server and I modified it ever so slightly. If you&#x27;d like to see it, then &lt;a href=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part2&#x2F;clang-format.txt&quot;&gt;here&lt;&#x2F;a&gt; ya go.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;organizing-the-workspace-choosing-an-approach&quot;&gt;Organizing the workspace, choosing an approach&lt;&#x2F;h2&gt;
+&lt;p&gt;With that sorted out I want to decide how to actually structure any experiments.&lt;&#x2F;p&gt;
+&lt;p&gt;As I mentioned in the previous post, plugins are apparently expected all be loaded from &lt;code&gt;$(TM_SDK_DIR)&#x2F;bin&#x2F;plugins&lt;&#x2F;code&gt; and so far every premake script in the samples and SDK set that as the output directory.&lt;&#x2F;p&gt;
+&lt;p&gt;Is this the only place The Machinery can load plugins from? If so, then is it expected that any projects using The Machinery should vendor the SDK as part of the project?&lt;&#x2F;p&gt;
+&lt;p&gt;The answer is that, yes currently for the beta this is the case, however there are plans to have project specific plugin locations in the future so it doesn&#x27;t appear to be expected that you&#x27;d be vendoring the SDK into every project.&lt;&#x2F;p&gt;
+&lt;p&gt;So how to proceed? What sort of layout and workflow isn&#x27;t going to trigger an itch?&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;If you&#x27;re like me, then there probably isn&#x27;t much that won&#x27;t make you itch a bit.&lt;&#x2F;em&gt; So I decided initially to just make a top-level premake script and duplicate any other bits of the SDK or sample projects I wanted to refer to so that even if I decided to use Visual Studio instead of VS Code I&#x27;d have something handy to reference. Very soon after creating a new plugin project and setting that up, I realized what a mistake it was. :)&lt;&#x2F;p&gt;
+&lt;p&gt;Instead I just decided to make a project level premake script, accept that the output will go into the SDK for now, and not worry about having potential reference projects included in the Visual Studio solution.&lt;&#x2F;p&gt;
+&lt;p&gt;So in my repo I have a project folder, with a plugins subdirectory. In the project is a premake script which will define targets for any plugins. This approach is based on how the SDK &lt;code&gt;samples&lt;&#x2F;code&gt; project is setup as opposed to how the &lt;code&gt;sample_projects&lt;&#x2F;code&gt; setup is to have a premake script on a per-plugin basis.&lt;&#x2F;p&gt;
+&lt;p&gt;Any confusion early on regarding how you&#x27;re &lt;em&gt;supposed&lt;&#x2F;em&gt; to do anything is largely the result of The Machinery being like a nice box of Lego instead of a set of choices followed by bumper rails to lead you to a set of pre-defined targets. You can do whatever you like and it&#x27;ll &lt;em&gt;probably&lt;&#x2F;em&gt; be ok.&lt;&#x2F;p&gt;
+&lt;p&gt;To quickly summarize, my project root now looks like:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;c:\projects\slowgames\CosmicTrash&amp;gt;fd
+Slowgames.sln
+libs.json
+plugins
+plugins\sprite_component
+plugins\sprite_component\sprite_component.c
+premake5.lua
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;sprite_component&lt;&#x2F;code&gt; is just a sample component created via the editor. For the curious, the output from tmbuild in project folder:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;c:\projects\slowgames\CosmicTrash&amp;gt;tmbuild -c Release
+Building configurations...
+Running action &amp;#39;vs2019&amp;#39;...
+Generated build&#x2F;sprite_component&#x2F;sprite_component.vcxproj...
+Done (169ms).
+Microsoft (R) Build Engine version 16.6.0+5ff7b0c9e for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  sprite_component.c
+     Creating library c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.lib and object c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.exp
+  sprite_component.vcxproj -&amp;gt; c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.dll
+
+-----------------------------
+tmbuild completed in: 6.269 s
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And now in the &lt;a href=&quot;&#x2F;the-machinery-part3&quot;&gt;next post&lt;&#x2F;a&gt; we can finally start looking at code.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>The Machinery - Part 1</title>
+		<published>2020-07-12T00:00:00+00:00</published>
+		<updated>2020-07-14T00:00:00+00:00</updated>
+		<link href="https://slowgames.netlify.app/the-machinery-part1/" type="text/html"/>
+		<id>https://slowgames.netlify.app/the-machinery-part1/</id>
+		<content type="html">&lt;h2 id=&quot;intro&quot;&gt;Intro&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;&quot;&gt;The Machinery&lt;&#x2F;a&gt; is an exciting SDK and toolset that is currently in a closed beta period and I was recently given access (&lt;em&gt;anybody can &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;beta.html&quot;&gt;apply&lt;&#x2F;a&gt;, I have no contacts or special credits to my name&lt;&#x2F;em&gt;).&lt;&#x2F;p&gt;
+&lt;p&gt;There are many reasons why The Machinery is interesting and I&#x27;ll try to avoid repeating things you can read on the &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;&quot;&gt;blog&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Two things stand out to me and motivate exploration:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;The SDK and engine are primarily developed in C with some excellent &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;physical-design&#x2F;&quot;&gt;constraints&lt;&#x2F;a&gt; to keep the design clean. This provides developers with &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;creating-cross-language-apis&#x2F;&quot;&gt;interesting possibilities&lt;&#x2F;a&gt; right out of the gate.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;little-machines-working-together-part-1&#x2F;&quot;&gt;Modularity&lt;&#x2F;a&gt; is a principal goal for all aspects of the SDK.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;&#x2F;h2&gt;
+&lt;p&gt;The invitation to the beta comes in the form of an invitation to their forums. It&#x27;s powered by &lt;a href=&quot;https:&#x2F;&#x2F;www.discourse.org&#x2F;&quot;&gt;Discourse&lt;&#x2F;a&gt; which is a nice and familiar platform these days.&lt;&#x2F;p&gt;
+&lt;p&gt;Beta releases, like their alpha releases before that, are distributed as attachments to associated topics in the forum. The current beta package is a &lt;em&gt;delightful&lt;&#x2F;em&gt; 34Mb in size! It only targets Windows initially. Internally they support other platforms, but sensibly the beta releases are limiting the platforms to focus on more important things.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;In addition to the SDK archive, there is a sample projects archive that&#x27;s 165Mb. This consists of a series of projects with asset data actually baked into project files, and a set of focused plugin examples with source code.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Once downloaded I don&#x27;t have any idea how the SDK is meant to be used or organized so I just plopped it into &lt;code&gt;c:\projects\slowgames&lt;&#x2F;code&gt; which is my monorepo for all things slowgames.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I have been using Perforce for this monorepo for a while, however recently I started using PlasticSCM to see if I like it a bit more given it&#x27;s git-like proclivities. So far, the answer is &#x27;meh&#x27;.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;So, now with these archives downloaded and unpacked let&#x27;s continue by looking at the SDK contents:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;c:\projects\slowgames\OurMachinery&amp;gt;ls -l
+total 76
+-rw-r--r-- 1 phote phote 62326 Jul  9 18:25 README.md.html
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 bin
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 code
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 doc
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 headers
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 lib
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 samples
+drwxr-xr-x 1 phote phote     0 Jul  9 18:25 utils
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I really really hate the Windows 10 desperate need to chop off the &#x27;x&#x27; from my username. What the hell is the reason for that?&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Nice, a README. A 61kb README full of excellent information about how to work with The Machinery, the key concepts introduce and outline the ideas behind how data should be worked with, ideas for scene organization, introductions to the primary editor modes, and the basics of extending the engine via the plugin system.&lt;&#x2F;p&gt;
+&lt;p&gt;After going over the README a bit and getting that early feel for things, it&#x27;s time to run the editor and play with some samples.&lt;&#x2F;p&gt;
+&lt;p&gt;When you open &lt;code&gt;bin\the-machinery.exe&lt;&#x2F;code&gt; You get the default scene:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-default-scene.png&quot; alt=&quot;the-machinery-default-scene&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;That isn&#x27;t entirely true, what you get is a &amp;quot;Windows Defender&amp;quot; warning about this being an unsigned binary or something. Which is perfectly reasonable given the beta status.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;From here you can easily load any of the sample projects and dig around.&lt;&#x2F;p&gt;
+&lt;p&gt;The pong example provides an interesting look into using the &lt;code&gt;Graph&lt;&#x2F;code&gt; component, which is their visual scripting system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-pong.png&quot; alt=&quot;pong_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The first and third person gameplay examples take the approach of showing how to implement gameplay via the plugin system. &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-third-person.png&quot; alt=&quot;third_person_screenshot&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The other samples all try to demonstrate particular available systems or features. There is a lot to take in, the samples are focused and good at their job I think.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;building-a-component&quot;&gt;Building a Component&lt;&#x2F;h2&gt;
+&lt;p&gt;Our Machinery have a nice &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;one-button-source-code-builds&#x2F;&quot;&gt;post&lt;&#x2F;a&gt; explaining their thinking behind the provided build tools.&lt;&#x2F;p&gt;
+&lt;p&gt;The short version is that The Machinery includes a tool called &lt;code&gt;tmbuild&lt;&#x2F;code&gt; that generates projects with premake, runs the build, and possibly any unit tests in the plugin you&#x27;re building.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I&#x27;ve never used premake so this is all a bit new to me. I&#x27;m disappointed that I&#x27;m not able to easily use CLion. I&#x27;m comfortable with VS Code and Visual Studio. I just consider CLion and Emacs to be better at editing code. My current Emacs setup for working with C and C++ relies on a clang compilation database to be available and without it, VS Code is just the better choice. Can premake generate compilation databases?&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;It does all of this quickly and easily, but also in a bit of an annoying way. The first thing I did was run around the SDK and run tmbuild in any directory that contained a &lt;code&gt;premake5.lua&lt;&#x2F;code&gt;. But the result, aside from everything building fine and dandy, is that the SDK is now litered with extraneous folders and solutions.&lt;&#x2F;p&gt;
+&lt;p&gt;For every build you&#x27;ll end up with a &lt;code&gt;lib&lt;&#x2F;code&gt; folder which contains 7zip and premake. You&#x27;ll also get a Visual Studio solution next to your premake script and a folder named &lt;code&gt;build&lt;&#x2F;code&gt; with any project files referenced by the solution as well as a folder for intermediate build outputs. For now I&#x27;m just going to accept that as it is and contiue on my merry way.&lt;&#x2F;p&gt;
+&lt;p&gt;We can use the editor to initialize a new component for us (including a premake script :+1:). &lt;img src=&quot;https:&#x2F;&#x2F;slowgames.netlify.app&#x2F;the-machinery-part1&#x2F;the-machinery-beta-new-plugin.png&quot; alt=&quot;new_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;As someone new to premake it&#x27;s a wallop to take in, but thankfully some key lines are easy to spot at the bottom:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;project &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;foo_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;location &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;build&#x2F;foo_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;targetname &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_foo_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;SharedLib&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;language &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;C++&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;files &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;*.inl&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;*.h&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;*.c&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;}
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sysincludedirs &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{ &amp;quot;&amp;quot; }
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;filter &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;platforms:Win64&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;targetdir &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;$(TM_SDK_DIR)&#x2F;bin&#x2F;plugins&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;So in the end, we have premake generating projects and setting the actual output to the SDK plugins folder. This means that it would likely be straight-forward to use another build system or project structure.&lt;&#x2F;p&gt;
+&lt;p&gt;Something about this makes me wonder what is expected for project organization. Should you vendor in the SDK per-project? It certainly seems that way.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;going-forward&quot;&gt;Going Forward&lt;&#x2F;h2&gt;
+&lt;p&gt;This is a difficult post to write because I&#x27;ve been mostly working from memory and trying to recap my process of fumbling around and starting to feel comfortable with everything. I don&#x27;t want to copy and paste information you&#x27;d get in the README, or from their blog. And in general I have a lot of opinions and reactions I&#x27;m still chewing on a bit.&lt;&#x2F;p&gt;
+&lt;p&gt;In the next post I&#x27;ll talk about how I&#x27;ve decided to structure my exploration for the time being, and we can look at a minimal component and play around with building and hot reloading. Posts should get a bit more focused after that.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>

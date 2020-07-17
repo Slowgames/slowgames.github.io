@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Slowgames - errata</title>
+	<subtitle>Building Things. Making Stuff. Procgen.</subtitle>
+	<link href="https://slowgames.netlify.app/tags/errata/atom.xml" rel="self" type="application/atom+xml"/>
+	<link href="https://slowgames.netlify.app"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>2020-07-11T00:00:00+00:00</updated>
+	<id>https://slowgames.netlify.app/tags/errata/atom.xml</id>
+	<entry xml:lang="en">
+		<title>Hello World</title>
+		<published>2020-07-11T00:00:00+00:00</published>
+		<updated>2020-07-11T00:00:00+00:00</updated>
+		<link href="https://slowgames.netlify.app/init/" type="text/html"/>
+		<id>https://slowgames.netlify.app/init/</id>
+		<content type="html">&lt;p&gt;I don&#x27;t have many plans for this space. But I&#x27;ve been wanting to write more and record some of the stuff I&#x27;m figuring out and ultimately forgetting.&lt;&#x2F;p&gt;
+&lt;p&gt;Current plans starting with my vacation (July 2020), which happens to coincide with my 40th birthday, is to go fly a kite. But also in the evenings sit down and dig into the &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;&quot;&gt;The Machinery&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I was given access to the &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;beta.html&quot;&gt;beta&lt;&#x2F;a&gt; after filling out the requisite forms etc. This is pretty exciting for me. It&#x27;s a unique tool and a unique team of people working on it.&lt;&#x2F;p&gt;
+&lt;p&gt;Folks that know me, know that I really went all in with Rust (currently using it at my &lt;a href=&quot;https:&#x2F;&#x2F;kopernikusauto.com&quot;&gt;day job&lt;&#x2F;a&gt;) and The Machinery is built and designed to be used primarily using C.&lt;&#x2F;p&gt;
+&lt;p&gt;This sets the stage for not only diving into the world of &amp;quot;modern&amp;quot; C but it gives us that hook for more easily using Rust for some things.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>
