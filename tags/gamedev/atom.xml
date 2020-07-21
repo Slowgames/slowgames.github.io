@@ -213,6 +213,241 @@ tm_logger_api = reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a
 </content>
 	</entry>
 	<entry xml:lang="en">
+		<title>The Machinery - Part 4</title>
+		<published>2020-07-16T00:00:00+00:00</published>
+		<updated>2020-07-16T00:00:00+00:00</updated>
+		<link href="https://slowgames.github.io/the-machinery-part4/" type="text/html"/>
+		<id>https://slowgames.github.io/the-machinery-part4/</id>
+		<content type="html">&lt;p&gt;Our Machinery definitely turns the page on certain conventions. And not in a way that seems troublesome or pointless. The goal really appears to be about strong communication and making sure things describe intent. One that I didn&#x27;t expect was having &lt;em&gt;engines&lt;&#x2F;em&gt; in addition to &lt;em&gt;entity systems&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;There is a clear and interesting distinction between them and my preconceived notions for what an &amp;quot;entity system&amp;quot; would be, is actually what is called an &amp;quot;engine&amp;quot; in The Machinery.&lt;&#x2F;p&gt;
+&lt;p&gt;I don&#x27;t think it&#x27;s a problem to call the functions that operate, or transform data on components &lt;em&gt;engines&lt;&#x2F;em&gt;. In fact I rather like it personally. &lt;em&gt;And yes, it&#x27;s still in the phase where I have a total crush on The Machinery and haven&#x27;t entered the pit of familiarity and all that.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;ANYWAY...&lt;&#x2F;p&gt;
+&lt;p&gt;Engines! They are the things that run around and apply themselves to your scenes based on component filters, filters which inform The Machinery as to what component data should be provided to the engine when it&#x27;s called.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Entity systems on the other hand are simply called upon to perform some kinds of work (like a generic &#x27;tick&#x27; or &#x27;update&#x27;) and aren&#x27;t given any specific component data. For the rest of this post Imma ignore them.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;registering-an-engine&quot;&gt;Registering an engine&lt;&#x2F;h2&gt;
+&lt;p&gt;Engines operate in &amp;quot;simulation&amp;quot; mode (runtime) and so they are registered as an implementation of the &lt;code&gt;tm_entity_simulation_i&lt;&#x2F;code&gt; interface:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(reg, load, TM_ENTITY_SIMULATION_INTERFACE_NAME, component__register_engine);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Similar to the interface for creating a component, the &lt;code&gt;tm_engine_simulation_i&lt;&#x2F;code&gt; interface is a single function pointer with which we register our &lt;code&gt;component__register_engine&lt;&#x2F;code&gt; function as an implementation.&lt;&#x2F;p&gt;
+&lt;p&gt;Our implementation takes a pointer to a entity &lt;em&gt;context&lt;&#x2F;em&gt;, gets handles to the required components, initializes our &lt;code&gt;tm_engine_i&lt;&#x2F;code&gt; interface and registers it.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m not yet certain what the relationship between an entity &lt;em&gt;context&lt;&#x2F;em&gt; and an &lt;em&gt;entity&lt;&#x2F;em&gt; itself is yet. &lt;em&gt;Is this engine registered for every entity in our scenes with the correct combination of components?&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The entity engine interface can define filters which describe the set of entities it should be applied to. This can take the form of specifying an inclusive list of component types (only entities with &lt;em&gt;all&lt;&#x2F;em&gt; of the listed components), and exclusive list (only entitye with &lt;em&gt;none&lt;&#x2F;em&gt; of the listed components), or a more comprehensive &amp;quot;filter&amp;quot; function which can be used to apply more complicated expressions as needed.&lt;&#x2F;p&gt;
+&lt;p&gt;Our example component specifies both the component list and the filter function.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;The entity api provides a function to lookup components by their hash, which we use to get a handle to the 3 components we&#x27;re interested in:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint32_t sprite_component = tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lookup_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, TM_TT_TYPE_HASH__SPRITE_COMPONENT);
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint32_t transform_component = tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lookup_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, TM_TT_TYPE_HASH__TRANSFORM_COMPONENT);
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint32_t link_component = tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lookup_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, TM_TT_TYPE_HASH__LINK_COMPONENT);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This is part of the reason I&#x27;m currently confused by the distinction between an &lt;em&gt;entity context&lt;&#x2F;em&gt; and and &lt;em&gt;entity&lt;&#x2F;em&gt;. Are we getting handles to specific component instances or some archetypical index for the component for every entity?&lt;&#x2F;p&gt;
+&lt;p&gt;Taking a look into &lt;code&gt;entity.h&lt;&#x2F;code&gt; I see that &lt;code&gt;lookup_component&lt;&#x2F;code&gt; gives us an ID for a component (where 0 means &amp;quot;no component&amp;quot;). This ID is actually used in other functions (such as &lt;code&gt;add_component&lt;&#x2F;code&gt;, &lt;code&gt;get_component&lt;&#x2F;code&gt;, and &lt;code&gt;remove_component&lt;&#x2F;code&gt;). In these other cases you&#x27;re using the component ID  &lt;em&gt;in combination&lt;&#x2F;em&gt; with an entity handle &lt;em&gt;and&lt;&#x2F;em&gt; the entity context.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;With our three component IDs determined we can initialize our engine interface and register it:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_engine_i sprite_component_engine = {
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Sprite Component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;,
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;num_components &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;components &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= { sprite_component, transform_component, link_component },
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;writes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;false&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;},
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;update &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= engine_update__sprite_component,
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;filter &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= engine_filter__sprite_component,
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;inst &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= (tm_engine_o *)ctx,
+};
+tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;register_engine&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, &amp;amp;sprite_component_engine);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We give the engine a name, list the required components and declare whether we intend to write or read data on the component. In our case we&#x27;re intending to update the transform or link component, but only read from our the sprite component.&lt;&#x2F;p&gt;
+&lt;p&gt;Our update and filter functions are associated with the engine as is the entity context.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;filter-functions&quot;&gt;Filter functions&lt;&#x2F;h3&gt;
+&lt;p&gt;These functions are useful when a simple description of a set isn&#x27;t possible using the &lt;code&gt;components&lt;&#x2F;code&gt; and &lt;code&gt;excludes&lt;&#x2F;code&gt; fields of the &lt;code&gt;tm_engine_i&lt;&#x2F;code&gt; interface.&lt;&#x2F;p&gt;
+&lt;p&gt;In the case of this engine the filter function is used because of the relationship between the &lt;code&gt;link&lt;&#x2F;code&gt; component and the &lt;code&gt;transform&lt;&#x2F;code&gt; component. Our filter function says that any entity with a sprite component &lt;em&gt;and&lt;&#x2F;em&gt; either a link component or transform component are valid for this engine.&lt;&#x2F;p&gt;
+&lt;p&gt;We need to specify this, otherwise we would only be operating on entities without a parent &lt;em&gt;or&lt;&#x2F;em&gt; entities with a parent, instead of both. This is because entities with a link component can only have their transform modified through the link component.&lt;&#x2F;p&gt;
+&lt;p&gt;Filter functions work by way of component masks, although I&#x27;d assume you&#x27;re free to use other means depending on the case. Our sample filter is defined as:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static bool &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;engine_filter__sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
+    tm_engine_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;inst&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint32_t *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;components&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    uint32_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;num_components&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_component_mask_t *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mask&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+{
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_entity_mask_has_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mask, components[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;]) &amp;amp;&amp;amp;
+        (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_entity_mask_has_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mask, components[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;]) ||
+            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_entity_mask_has_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mask, components[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;]));
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h2 id=&quot;clarification-time&quot;&gt;Clarification time&lt;&#x2F;h2&gt;
+&lt;p&gt;Before I hop into the update method, it&#x27;s time to sit down with some docs and understand more concretely all the new terms and build up a better mental model.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I don&#x27;t always avoid docs before trying to understand things, but when there is sample code it&#x27;s just easier for me to start there first and build up questions which lead me through the documentation with more of a goal.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;code&gt;entity.h&lt;&#x2F;code&gt; has a neat and concise description of the four main features of the entity system in The Machinery:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;An &lt;em&gt;&lt;em&gt;entity&lt;&#x2F;em&gt;&lt;&#x2F;em&gt; is an ID which uniquely identifies a game object.&lt;&#x2F;li&gt;
+&lt;li&gt;A &lt;em&gt;&lt;em&gt;component&lt;&#x2F;em&gt;&lt;&#x2F;em&gt; is data that can be associated with an entity.&lt;&#x2F;li&gt;
+&lt;li&gt;An &lt;em&gt;&lt;em&gt;engine&lt;&#x2F;em&gt;&lt;&#x2F;em&gt; is an update function that is applied to all entities with certain components.&lt;&#x2F;li&gt;
+&lt;li&gt;A &lt;em&gt;&lt;em&gt;system&lt;&#x2F;em&gt;&lt;&#x2F;em&gt; is an update function that is applied to the entire entity context.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It&#x27;s explained that entities live in something called a &lt;em&gt;simulation context&lt;&#x2F;em&gt; and that entity IDs are only unique for a specific context. Applications are able to have multiple contexts running if need be. Each one being it&#x27;s own isolated world.&lt;&#x2F;p&gt;
+&lt;p&gt;Seems fair to imagine for now that we&#x27;d only be dealing with a single context here since we&#x27;re setting up a small scene in the editor and running it.&lt;&#x2F;p&gt;
+&lt;p&gt;An interesting part is called &lt;em&gt;The Blackboard&lt;&#x2F;em&gt;. This is the system designed for providing constant data to engines without having to explicitly provide it to each instance. The example used in the docs was a global such as &amp;quot;delta time&amp;quot;. Each blackboard value is a struct with an ID and a union that&#x27;s either a &lt;code&gt;double&lt;&#x2F;code&gt; or a &lt;code&gt;void*&lt;&#x2F;code&gt;. The IDs defined in the entity system headers are all hashes of strings such as:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Blackboard item representing the total elapsed time in the simulation.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;TM_ENTITY_BB__TIME &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_STATIC_HASH&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_time&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x6a30b071f871aa9d&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ULL&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Blackboard values are provided to engines as a pair of start and end pointers. It seems a bit strange to have to search through the blackboard values like this in order to find a value you&#x27;re interested in. But that strangeness is perhaps the result of having more often used other languages (including Rust) where you&#x27;d probably just be handed a map of some kind. Is always running a hash function to find something, perhaps multiple things, worth the cost compared to just iterating over these items and comparing integers? I think that would just depend on how many items you might be looking for, and how many items you&#x27;re putting into the blackboard.&lt;&#x2F;p&gt;
+&lt;p&gt;To illustrate how this works, here is what we do early in the update function to get the elapsed simulation time:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;double&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; t=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_entity_blackboard_value_t *bb = data-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;blackboard_start&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; bb != data-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;blackboard_end&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; ++bb)
+{
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(bb-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;== TM_ENTITY_BB__TIME) {
+        t = bb-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;double_value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+    }
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h2 id=&quot;applying-the-engine&quot;&gt;Applying the engine&lt;&#x2F;h2&gt;
+&lt;p&gt;We&#x27;re now able to take a look at the biggest function in the file. Where something actually happens and is applied to the scene.&lt;&#x2F;p&gt;
+&lt;p&gt;This sample component applies a sinf modulation to the y coordinate of an entitys transform or link component. It uses the frequency and amplitude fields of our component and caches the incoming y coordinate on the y0 field to be used in the next update.&lt;&#x2F;p&gt;
+&lt;p&gt;Let&#x27;s quickly look at the signature of the update function:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;engine_update__sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
+    tm_engine_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;inst&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    tm_engine_update_set_t *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The &lt;code&gt;tm_engine_o*&lt;&#x2F;code&gt; is the pointer to our entity context (which we provided when registering this engine), and the &lt;code&gt;tm_engine_update_set_t*&lt;&#x2F;code&gt; is what holds pointers to our blackboard values and our entity data to operate on.&lt;&#x2F;p&gt;
+&lt;p&gt;For such a simple transformation of data, a whole bunch of stuff is going on in this component so I&#x27;ll start with a rough outline:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a temp allocator&lt;&#x2F;li&gt;
+&lt;li&gt;Initialize pointers for our lists of entities (one for link components, and one for transform components)&lt;&#x2F;li&gt;
+&lt;li&gt;Get a pointer to the link_component manager&lt;&#x2F;li&gt;
+&lt;li&gt;Get the current simulation time via the blackboard. &lt;em&gt;(see above)&lt;&#x2F;em&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;For each &lt;code&gt;tm_engine_update_array_t&lt;&#x2F;code&gt; in the update set:
+&lt;ul&gt;
+&lt;li&gt;Get the pointer to the list of each component type&lt;&#x2F;li&gt;
+&lt;li&gt;For each entity in this update array:
+&lt;ul&gt;
+&lt;li&gt;Update the sprite component &lt;code&gt;y0&lt;&#x2F;code&gt; field.&lt;&#x2F;li&gt;
+&lt;li&gt;Update the y coordinate on either the link or the transform component&lt;&#x2F;li&gt;
+&lt;li&gt;Store the entity ID in either the link or transform&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;For each entity that had a link component
+&lt;ul&gt;
+&lt;li&gt;Use the link component api &lt;code&gt;transform&lt;&#x2F;code&gt; function to update it&#x27;s transform&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Use the entity api &lt;code&gt;notify&lt;&#x2F;code&gt; function to signal changes for the entities with just a transform component&lt;&#x2F;li&gt;
+&lt;li&gt;Destory the temp allocator&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;With this outline in mind, let&#x27;s look more closely at a couple of things.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;temp-allocator&quot;&gt;Temp allocator&lt;&#x2F;h4&gt;
+&lt;p&gt;The allocator is used by the &lt;code&gt;carray&lt;&#x2F;code&gt; utility code which implements a stretchy buffer. There are two macros which init and shutdown the allocator and they should bookend whatever scope will require it:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_INIT_TEMP_ALLOCATOR&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ta);
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* ... all the code ... *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_SHUTDOWN_TEMP_ALLOCATOR&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ta);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you initialize a temp allocator but forget to use a matching shutdown, what happens? Memory leak? &lt;em&gt;Yep&lt;&#x2F;em&gt;... BUT a very nice thing about this macro is that it uses a simple trick to provide a warning for you when you forget to shut it down:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;..\..\plugins\sprite_component\sprite_component.c(74,5): warning : unused variable &amp;#39;ta_TM_SHUTDOWN_TEMP_ALLOCATOR_is_missing&amp;#39; [-Wunused-variable] [C:\projects\slowgames\CosmicTrash\build\sprite_component\sprite_compon
+ent.vcxproj]
+c:\projects\slowgames\OurMachinery\headers\foundation&#x2F;temp_allocator.h(98,14): message : expanded from macro &amp;#39;TM_INIT_TEMP_ALLOCATOR&amp;#39; [C:\projects\slowgames\CosmicTrash\build\sprite_component\sprite_component.vcxproj]
+&amp;lt;scratch space&amp;gt;(11,1): message : expanded from here [C:\projects\slowgames\CosmicTrash\build\sprite_component\sprite_component.vcxproj]
+  sprite_component.vcxproj -&amp;gt; c:\projects\slowgames\OurMachinery\bin\plugins\tm_sprite_component.dll
+
+-----------------------------
+tmbuild completed in: 2.088 s
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h4 id=&quot;working-with-stretchy-buffers&quot;&gt;Working with stretchy buffers&lt;&#x2F;h4&gt;
+&lt;p&gt;Throughout this update we&#x27;re collecting entity IDs into two lists. We first initialize them as null pointers:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_entity_t *mod_link = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+tm_entity_t *mod_transform = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;With the previously initialized temp allocator, we can now push values on to these:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(link) {
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* snip *&#x2F;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_temp_push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_link, a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;entities&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[i], ta);
+}
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* snip *&#x2F;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_temp_push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_transform, a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;entities&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[i], ta);
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;These stretchy buffers track their count and capacity in a header &lt;em&gt;behind&lt;&#x2F;em&gt; the address of the first item. Behind meaning, when allocating the buffer, the initial bytes are the header, then the pointer to the head of the array is the next address.&lt;&#x2F;p&gt;
+&lt;p&gt;You can iterate over them using the usual C pointer shenanigans:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tm_entity_t *e = mod_link; e != &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_end&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_link); ++e) {
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* snip *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;All the operations you might need or expect when working with carrays are available. One interesting thing about them though is that you use them by including an &amp;quot;*.inl&amp;quot; file rather than a header. Most of the code seems to be macros.&lt;&#x2F;p&gt;
+&lt;p&gt;Our example uses the temp allocator and associated carray macros, but there are other options, including the use of static memory.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;using-the-link-manager&quot;&gt;Using the link_manager&lt;&#x2F;h4&gt;
+&lt;p&gt;One of the first steps in the function is to get a pointer to the link_manager:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint32_t link_component = tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lookup_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, TM_TT_TYPE_HASH__LINK_COMPONENT);
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;*link_manager = tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, link_component)-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;manager&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This is used at the end of the function in order to make use of the &lt;code&gt;tm_link_component_api&lt;&#x2F;code&gt;. We must use this to correctly update any linked transforms:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tm_entity_t *e = mod_link; e != &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_end&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_link); ++e) {
+    tm_link_component_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;transform&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(link_manager, *e);
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h4 id=&quot;iterating-over-the-update-data&quot;&gt;Iterating over the update data&lt;&#x2F;h4&gt;
+&lt;p&gt;The &lt;code&gt;tm_engine_update_set_t&lt;&#x2F;code&gt; struct has a field &lt;code&gt;arrays&lt;&#x2F;code&gt; which holds one or more &lt;code&gt;tm_engine_update_array_t&lt;&#x2F;code&gt; structs. These update array structs hold the lists of entities and component data.&lt;&#x2F;p&gt;
+&lt;p&gt;The component data appears to be an array of pointers to arrays of component data actually. The component data lists are in the same order you specify in the &lt;code&gt;tm_engine_i&lt;&#x2F;code&gt; implementation used to register the update function.&lt;&#x2F;p&gt;
+&lt;p&gt;When we get down to business with our component update work, we first need to iterate over these update arrays:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tm_engine_update_array_t *a = data-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;arrays&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; a &amp;lt; data-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;arrays &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;+ data-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;num_arrays&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; ++a) {
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* snip *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now for each of these we get our lists of component data:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_sprite_component_t *sprite_component = a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;components&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;];
+tm_transform_component_t *transform = a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;components&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;];
+tm_link_component_t *link = a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;components&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;];
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Finally we can iterate over each &lt;em&gt;entity&lt;&#x2F;em&gt;:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(uint32_t i = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; i &amp;lt; a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;; ++i) {
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* snip *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Just in case it isn&#x27;t obvious, in this loop &lt;code&gt;i&lt;&#x2F;code&gt; is the index of the entity data, and not the entity ID. The actual entity IDs are stored in the &lt;code&gt;entities&lt;&#x2F;code&gt; field.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h4 id=&quot;updating-the-entity-y-coordinates-using-sinf&quot;&gt;Updating the entity y coordinates using sinf&lt;&#x2F;h4&gt;
+&lt;p&gt;For the actual &amp;quot;work&amp;quot; to be done we&#x27;re finally ready to modify some transforms! Yeee-haaw!&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(!sprite_component[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;) {
+    sprite_component[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= transform[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pos&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+}
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; y = sprite_component[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;+ sprite_component[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;amplitude &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;* &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;sinf&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)t * sprite_component[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;frequency&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;);
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(link) {
+    link[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;local_transform&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pos&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= y;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_temp_push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_link, a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;entities&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[i], ta);
+}
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{
+    transform[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pos&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= y;
+    ++transform[i].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;version&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_carray_temp_push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(mod_transform, a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;entities&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;[i], ta);
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h2 id=&quot;wrapping-up&quot;&gt;Wrapping up!&lt;&#x2F;h2&gt;
+&lt;p&gt;Adding our component to one of the sample entities shows that it does indeed move in the Y-axis as expected. Updating the frequency and amplitude takes effect in real-time.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part4&#x2F;wavy_thing.mp4&quot;&gt;Here&lt;&#x2F;a&gt; is a short screen cap. &lt;em&gt;(How does one make gifs these days?)&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;This was also a rather large post. But thanks for taking a look while I refuse to read docs before playing around and making assumptions.&lt;&#x2F;p&gt;
+&lt;p&gt;Having come to this point I&#x27;m barely scratching the surface of what is possible. There are a lot of directions I&#x27;d like to go from here. The next set of posts will be a bit more focused on learning how to do something specific I think. Armed now as I am with the rudimentary understanding of The Machinery, I&#x27;d like to take the next steps converting this example component into the 3D sprite component I have in mind. This probably means that I&#x27;d need to start by exploring the asset import workflow and learning more about what the creation graphs can do.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
 		<title>The Machinery - Part 2</title>
 		<published>2020-07-14T00:00:00+00:00</published>
 		<updated>2020-07-14T00:00:00+00:00</updated>
