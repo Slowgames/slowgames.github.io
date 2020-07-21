@@ -5,217 +5,12 @@
 	<link href="https://slowgames.github.io/tags/gamedev/atom.xml" rel="self" type="application/atom+xml"/>
 	<link href="https://slowgames.github.io"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2020-07-16T00:00:00+00:00</updated>
+	<updated>2020-07-21T00:00:00+00:00</updated>
 	<id>https://slowgames.github.io/tags/gamedev/atom.xml</id>
 	<entry xml:lang="en">
-		<title>The Machinery - Part 3</title>
-		<published>2020-07-16T00:00:00+00:00</published>
-		<updated>2020-07-16T00:00:00+00:00</updated>
-		<link href="https://slowgames.github.io/the-machinery-part3/" type="text/html"/>
-		<id>https://slowgames.github.io/the-machinery-part3/</id>
-		<content type="html">&lt;p&gt;Finally! Code only this time (&lt;em&gt;probably&lt;&#x2F;em&gt;). The Machinery has a number of great samples and gives you a great little component template to get started with. It&#x27;s jam packed with &lt;em&gt;stuff&lt;&#x2F;em&gt;! It&#x27;s entirely written in &lt;strong&gt;C&lt;&#x2F;strong&gt;!&lt;&#x2F;p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Folks that know me probably expect me to just hop right into Rust. But not yet! Not until I understand a great deal more about The Machinery. But aside from that I really want to get out of my head a bit and sometimes the best way to do that is to just take a break from your usual patterns and habits.&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;p&gt;The Machinery can be extended in a couple of ways. You can create custom components for the ECS (or is it an &lt;em&gt;ECE&lt;&#x2F;em&gt;), you can create new editor tags&#x2F;interfaces, and you can create nodes for the graph component. You can do quite a bit with these extension points... you can do pretty much anything. Custom data, editors, and gameplay systems all kick off from there. The Machinery is sort of wild.&lt;&#x2F;p&gt;
-&lt;p&gt;But today is not the day to figure out all the ways to do very subversive and wild systems engineering. Today is all about getting our vocab built-up and coming to an understanding the fundamentals.&lt;&#x2F;p&gt;
-&lt;h2 id=&quot;first-steps&quot;&gt;First Steps&lt;&#x2F;h2&gt;
-&lt;p&gt;&lt;strong&gt;Q:&lt;&#x2F;strong&gt; What makes a plugin to The Machinery?&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;strong&gt;A:&lt;&#x2F;strong&gt; Any dll&#x2F;so&#x2F;dylib, whose name begins with &lt;code&gt;tm_&lt;&#x2F;code&gt;, that exports the function:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_load_plugin&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_api_registry_api *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;bool &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;The first thing provided to a plugin is a pointer to the registry &lt;em&gt;api&lt;&#x2F;em&gt;. According to the docs the registry api provides a &lt;em&gt;&amp;quot;Global registry that keeps track of loaded APIs and interface implementations.&amp;quot;&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;So out of the gate we have a distinction between an &amp;quot;API&amp;quot; and an &amp;quot;Interface&amp;quot;. Helpfully the docs immediately clarify the distinction between the two.&lt;&#x2F;p&gt;
-&lt;p&gt;An &lt;code&gt;API&lt;&#x2F;code&gt; is something with a single implementation. An &lt;code&gt;Interface&lt;&#x2F;code&gt; is something with potentially multiple implementations. Makes sense.&lt;&#x2F;p&gt;
-&lt;p&gt;The registry api includes functions (&lt;em&gt;it&#x27;s rather hard to stop myself from writing &#x27;method&#x27; everywhere&lt;&#x2F;em&gt;) to &lt;code&gt;get&lt;&#x2F;code&gt; and &lt;code&gt;set&lt;&#x2F;code&gt; an api implementation, and it has functions to &lt;code&gt;add_implementation&lt;&#x2F;code&gt;, &lt;code&gt;remove_implementation&lt;&#x2F;code&gt;, and get a list of &lt;code&gt;implementations&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Getting a list of implementations has that fun C style interface of a pointer to pointer &lt;code&gt;**&lt;&#x2F;code&gt; and you&#x27;ll be getting the number of implementations via an out arg &lt;code&gt;*count&lt;&#x2F;code&gt;. These sorts of interfaces to systems are so easy and familiar... but I&#x27;m still wary when I see it. You have to be so careful and consistent with marking things &lt;code&gt;const&lt;&#x2F;code&gt; that aren&#x27;t out arguments. It&#x27;s maybe less efficient or possibly just annoying, but I&#x27;d have preferred a struct with the count and implementations to just be returned.&lt;&#x2F;p&gt;
-&lt;p&gt;Nobody writes C that way of course, so it wouldn&#x27;t make sense for the folks at Our Machinery to suddenly start doing things like that I suppose. Also.. yeah, if I consider it more it&#x27;d be annoying to have structs for the result of every function like this. C++ has templates for this. C could just use &lt;code&gt;void*&lt;&#x2F;code&gt; but then you&#x27;d be casting for every use and boy-howdy that&#x27;s some line noise.&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;p&gt;Ok, so that&#x27;s an intro to the &lt;code&gt;api_registry&lt;&#x2F;code&gt; and what we&#x27;re expected to use it for but what&#x27;s up with that &lt;code&gt;bool load&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
-&lt;p&gt;Based on the following two macros:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Convenience macro that either sets or remove an api based on value of `load` flag.
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_set_or_remove_api&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ptr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;) \
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(load)                                      \
-        reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(name, ptr, sizeof(*ptr));         \
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else                                           &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;\
-        reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;remove&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ptr)
-
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Convenience macro that either adds or removes an implementation based on value of `load` flag.
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ptr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;) \
-    (load ? reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;add_implementation &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;: reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)(name, ptr)
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;I&#x27;m lead to believe that this indicates whether the plugin is being loaded or unloaded. I didn&#x27;t yet see anything in the UI that would specifically unload a plugin, but The Machinery can be run with a &lt;code&gt;--hot-reload&lt;&#x2F;code&gt; flag. Unless I&#x27;m mistaken this facility works by renaming the plugin dll before loading it, so that when you rebuild a plugin it can be copied again and loaded. The previous loaded code would be then responsible for unregistering it&#x27;s component interfaces, apis, and other code. &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;dll-hot-reloading-in-theory-and-practice&#x2F;&quot;&gt;Here&lt;&#x2F;a&gt; is a relevant blog post on the matter.&lt;&#x2F;p&gt;
-&lt;hr &#x2F;&gt;
-&lt;p&gt;So now it&#x27;s clear that in order to be a plugin you need to define (and export) the expected function in your library and use the provide &lt;code&gt;api_registry&lt;&#x2F;code&gt; API to get access to any API that you require for your plugin, as well as register anything your plugin provides.&lt;&#x2F;p&gt;
-&lt;p&gt;Something I didn&#x27;t expect, because I&#x27;m rather biased and trained to think in certain ways, was that if your plugin needs to use specific APIs you need to stick them someplace... but where? Well, it&#x27;s C, so static global state apparently. :D In C, a static global is only accessible to the compilation unit it&#x27;s declared in, so you&#x27;d want to initialize any static global pointers in the &lt;code&gt;tm_load_plugin&lt;&#x2F;code&gt; function.&lt;&#x2F;p&gt;
-&lt;p&gt;To illustrate how this works in The Machinery we can just look at how the example component we&#x27;re reviewing gets a pointer to the entity API:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_entity_api *tm_entity_api;
-
-
-TM_DLL_EXPORT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_load_plugin&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_api_registry_api *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;bool &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
-{
-    tm_entity_api = reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_ENTITY_API_NAME);
-}
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;One final interesting thing to note is that the &lt;code&gt;api_registry&lt;&#x2F;code&gt; will always return to you a pointer to an api, but it&#x27;s associated functions may be NULL until whatever plugin provides them has been loaded. In addition to this, if a plugin that provides the api implementation is reloaded, your static global pointer will have been updated for you.&lt;&#x2F;p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;At this point it is already an interesting thought process to imagine what a Rust version of the this would look like. None of this is possible to do without using &lt;code&gt;unsafe&lt;&#x2F;code&gt;, although the lazy_static crate might be able to help.&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;h2 id=&quot;a-simple-component&quot;&gt;A Simple Component&lt;&#x2F;h2&gt;
-&lt;p&gt;Components are just structs in The Machinery. Nice and simple. The example component is declared as:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;struct tm_sprite_component_t
-{
-    float y0;
-    float frequency;
-    float amplitude;
-};
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;blockquote&gt;
-&lt;p&gt;It&#x27;s called &amp;quot;sprite component&amp;quot; because I ultimately plan to make it a 3D sprite component.&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;p&gt;Nice and simple but certainly will require some wiring before we can &amp;quot;attach&amp;quot; it to an entity and have any property values serialized to disk with the scene.&lt;&#x2F;p&gt;
-&lt;h3 id=&quot;introducing-our-component-data-to-the-truth&quot;&gt;Introducing our component data to The Truth&lt;&#x2F;h3&gt;
-&lt;p&gt;To get started we must look to &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;the-story-behind-the-truth-designing-a-data-model&#x2F;&quot;&gt;The Truth&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
-&lt;p&gt;We need a way to describe our component and its properties as well as give it a &amp;quot;type&amp;quot;. In order to give your object&#x2F;component a type we have to decide on a type name (and calculate it&#x27;s hash apparently). The type name should be prefixed with &lt;code&gt;tm_&lt;&#x2F;code&gt; I think, and from what I&#x27;ve seen it generally just matches the struct name.&lt;&#x2F;p&gt;
-&lt;p&gt;The example code uses the preprocessor to define:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;TM_TT_TYPE__SPRITE_COMPONENT &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;TM_TT_TYPE_HASH__SPRITE_COMPONENT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_STATIC_HASH&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x788c0feb4cc58af4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ULL&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;The type name is expected to be a static string, and the useful macro &lt;code&gt;TM_STATIC_HASH&lt;&#x2F;code&gt; acts as a marker for a preprocess step, a useful tool named &lt;code&gt;hash.exe&lt;&#x2F;code&gt; that can generate hashes for you, or update them in the file if they don&#x27;t match. (&lt;em&gt;this tool should probably be renamed as &lt;code&gt;tmhash.exe&lt;&#x2F;code&gt; right?&lt;&#x2F;em&gt;)&lt;&#x2F;p&gt;
-&lt;p&gt;Any properties that should be known to The Truth need to have IDs and C enums would appear to be the tool in charge of that:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;enum &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{
-    TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; float
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;    TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; float
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;};
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Properties also have types, and The Truth has a fixed set of options here that seem to cover every useful possibility &lt;em&gt;&amp;quot;none&amp;quot;, bool, uint32, uint64, float, double, string, &amp;quot;buffer&amp;quot;, &amp;quot;reference&amp;quot;, &amp;quot;subobject&amp;quot;, &amp;quot;reference set&amp;quot;, &amp;quot;subobject set&amp;quot;&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
-&lt;p&gt;Here is how we describe our components properties:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_the_truth_property_definition_t sprite_component_properties[] = {
-    [TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY] = { &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;frequency&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, TM_THE_TRUTH_PROPERTY_TYPE_FLOAT },
-    [TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE] = { &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;amplitude&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, TM_THE_TRUTH_PROPERTY_TYPE_FLOAT },
-};
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;hr &#x2F;&gt;
-&lt;p&gt;So with the requisite metadata in hand we&#x27;re ready to take the remaining couple of steps to introduce our component to The Machinery by creating the type in the The Truth:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint64_t sprite_component_type = tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;create_object_type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
-    tt, TM_TT_TYPE__SPRITE_COMPONENT,
-    sprite_component_properties,
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_ARRAY_COUNT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(sprite_component_properties));
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;In certain cases you might want to have your component defaulted to some value other than a zero-initialized struct. In these cases you can create an instance of your component and set it as the default that will be cloned whenever this component is added to an entity:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint64_t default_object = tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quick_create_object&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
-    tt, TM_TT_TYPE_HASH__SPRITE_COMPONENT,
-    TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1.0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1.0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    -&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;);
-tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set_default_object&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, sprite_component_type, default_object);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;blockquote&gt;
-&lt;p&gt;In general you&#x27;re discouraged from doing this. Zero-initialized data is the mantra in The Machinery.&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;p&gt;Hard not to stop for a second and pull on a thread here. The &lt;code&gt;quick_create_object&lt;&#x2F;code&gt; function is a combination of &lt;code&gt;create_object&lt;&#x2F;code&gt; and &lt;code&gt;quick_set_properties&lt;&#x2F;code&gt;. It uses varargs to essentially call a more specialized property setter. &lt;em&gt;But how on earth does this translate to updating field members on a struct?&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;strong&gt;It doesn&#x27;t&lt;&#x2F;strong&gt; because The Truth deals with &amp;quot;objects&amp;quot; and &amp;quot;properties&amp;quot;, and provides facilities to get &lt;em&gt;read pointers&lt;&#x2F;em&gt; and &lt;em&gt;write pointers&lt;&#x2F;em&gt; to objects which let you &lt;em&gt;get&lt;&#x2F;em&gt; and &lt;em&gt;set&lt;&#x2F;em&gt; property values on objects in a thread-safe way. The type and value you&#x27;re setting up don&#x27;t deal with our component struct directly, but let&#x27;s put a pin in this trail of thought for now and quickly mention &amp;quot;aspects&amp;quot; in The Truth.&lt;&#x2F;p&gt;
-&lt;hr &#x2F;&gt;
-&lt;p&gt;&lt;em&gt;Aspects&lt;&#x2F;em&gt; in The Truth are an &lt;em&gt;interface&lt;&#x2F;em&gt; that provide specific functionalities to object types. This happens to be the extension point which gives us the ability to have a standard editor ui for interaction with our component if desired. Things like custom gizmos in the viewport can be setup this way if I understand correctly.&lt;&#x2F;p&gt;
-&lt;p&gt;I don&#x27;t see it used anywhere else in the example component, but it does setup an editor ui aspect for the component with a completely default implementation for the &lt;code&gt;tm_ci_editor_ui_i&lt;&#x2F;code&gt; interface:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* static global handle to the interface *&#x2F;
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_ci_editor_ui_i *editor_aspect = &amp;amp;(tm_ci_editor_ui_i) { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;};
-
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* defined in our type creation function *&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;
-tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set_aspect&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, sprite_component_type, TM_CI_EDITOR_UI, editor_aspect);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Looking at the docs for this interface this should mark the component as enabled in the editor with no special handling or representation in the viewports or editor gizmos.&lt;&#x2F;p&gt;
-&lt;hr &#x2F;&gt;
-&lt;p&gt;All of the previous setup was handled in a short function &lt;code&gt;static void truth__create_types(struct tm_the_truth_o *tt)&lt;&#x2F;code&gt;. A pointer to this function is given to the truth as an implementation of the &lt;code&gt;tm_the_truth_create_types_i&lt;&#x2F;code&gt; interface (which is just a single function pointer):&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(reg, load, TM_THE_TRUTH_CREATE_TYPES_INTERFACE_NAME, truth__create_types);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Gotta wonder now, how is it handled that a type fundamentally changes when you reload a plugin? Does The Truth keep track of this somehow?&lt;&#x2F;p&gt;
-&lt;&#x2F;blockquote&gt;
-&lt;h2 id=&quot;setting-up-our-component-for-use-with-entities&quot;&gt;Setting up our component for use with entities&lt;&#x2F;h2&gt;
-&lt;p&gt;So, our component is a struct that we want to store on an entity, but it&#x27;s key data is also kept in The Truth. Let&#x27;s look first at how we can make it possible to associate our struct with an entity.&lt;&#x2F;p&gt;
-&lt;p&gt;The entity api defines a specific interface for creating components &lt;code&gt;tm_entity_create_component_i&lt;&#x2F;code&gt; and we setup an implementation of this interface as such:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(reg, load, TM_ENTITY_CREATE_COMPONENT_INTERFACE_NAME, component__create);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;In our function &lt;code&gt;component__create&lt;&#x2F;code&gt; we add an implementation of the &lt;code&gt;tm_component_i&lt;&#x2F;code&gt; interface and register it with the &lt;em&gt;entity context&lt;&#x2F;em&gt;:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_component_i component = {
-    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= TM_TT_TYPE__SPRITE_COMPONENT,
-    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bytes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= sizeof(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_sprite_component_t),
-    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load_asset &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= component__load_asset,
-};
-
-tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;register_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, &amp;amp;component);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Our implementation of &lt;code&gt;tm_component_i&lt;&#x2F;code&gt; provides probably the absolute minimum. The name and bytes fields appear to be obvious so what is the &lt;code&gt;load_asset&lt;&#x2F;code&gt; function responsible for? According to it&#x27;s docs this function is responsible for loading data from The Truth. We assign a pointer to our function &lt;code&gt;component__load_asset&lt;&#x2F;code&gt; which is implemented as:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;component__load_asset&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
-    tm_component_manager_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;man&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    tm_entity_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;c_vp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_the_truth_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
-    uint64_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;asset&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
-{
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_sprite_component_t *c = c_vp;
-    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_the_truth_object_o *asset_r = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_tt_read&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset);
-    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
-    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;frequency &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get_float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset_r, TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY);
-    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;amplitude &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get_float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset_r, TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE);
-}
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Fantastically straight forward. Get a read pointer to the object (here called &amp;quot;asset&amp;quot;), then update the component struct with the values that were stored in The Truth.&lt;&#x2F;p&gt;
-&lt;h2 id=&quot;understanding-entities-and-the-truth-a-bit-better&quot;&gt;Understanding entities and The Truth a bit better&lt;&#x2F;h2&gt;
-&lt;p&gt;It isn&#x27;t clear from any doc comments when precisely this function will be called or how to reflect changes to the component back into The Truth but my assumption at the moment is that when we registered the editor ui aspect with the object type, we&#x27;re setting up a way to get a UI to update values, which would call this load_asset function.&lt;&#x2F;p&gt;
-&lt;p&gt;It&#x27;s not hard to test I guess...&lt;&#x2F;p&gt;
-&lt;p&gt;First up, let&#x27;s open the editor and add our component to the world entity:&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;add-component.png&quot; alt=&quot;add_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;And here is the component editor we get:&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;sprite-component-editor.png&quot; alt=&quot;edit_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;Before I remove the editor aspect and test what happens there, maybe I can add a log line to our &lt;code&gt;component__load_asset&lt;&#x2F;code&gt; function and see if this gets called every time we change a property value in the editor.&lt;&#x2F;p&gt;
-&lt;p&gt;We&#x27;ll need a handle to the log api first:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_logger_api* tm_logger_api;
-
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#include &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;foundation&#x2F;log.h&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;gt;
-
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* .... later inside tm_load_plugin ... *&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;
-tm_logger_api = reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_LOGGER_API_NAME);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Now we can add a little log output as a treat:&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
-&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_logger_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_LOG_TYPE_INFO, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Howdy from component__load_asset!&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;);
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Build the plugin (remember to run with the &lt;code&gt;--hot-reload&lt;&#x2F;code&gt; flag), return to the editor change a value on the component editor &lt;em&gt;aaaaaaand&lt;&#x2F;em&gt;.... no log output:&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;no-logs.png&quot; alt=&quot;no-logs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;Is this because the logs are filtered or because my assumptions were incorrect? Let&#x27;s just add logs to all the things and see... &lt;strong&gt;crash&lt;&#x2F;strong&gt;. OH! I uh, did a dumb thing and put a log line at the start of &lt;code&gt;tm_load_plugin&lt;&#x2F;code&gt; before I had a refrence to the api. :facepalm:&lt;&#x2F;p&gt;
-&lt;p&gt;After I fixed that and restarted the editor, oila! There are logs... &lt;strong&gt;and&lt;&#x2F;strong&gt; I&#x27;m seeing that &lt;code&gt;load_asset&lt;&#x2F;code&gt; is indeed called when editing the component.&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;logs.png&quot; alt=&quot;logs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;So I don&#x27;t know why the log output didn&#x27;t appear after a hot reload, but I can put that investigation on to the backburner for a while. So I&#x27;ll quickly clear the console, clear all log lines from the plugin, and finally rebuild to make sure everything continues to work as expected... and the log lines are still there. I clearly do not have a complete picture of the plugin hot-loading so I&#x27;m betting that by removing the editor ui aspect we won&#x27;t see a change, unless perhaps we close and restart the editor... which was correct.&lt;&#x2F;p&gt;
-&lt;p&gt;But perhaps not surprising, after rebuilding and reloading the editor we no longer have the ability to add the component to the entity!&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;no-component.png&quot; alt=&quot;no-component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;This is interesting to consider. Without setting up the editor ui aspect for an object type in The Truth, we can&#x27;t create a component on the entity in the editor... but where exactly did we hook that relationship up?&lt;&#x2F;p&gt;
-&lt;p&gt;It appears that, when we register an implementation for the &lt;code&gt;tm_entity_create_component_i&lt;&#x2F;code&gt; interface, the component name is being used to connect The Truth to our entity oriented code. And what is also interesting is that in docs for the interface we register, the implementation is actually referred to as a &lt;em&gt;&amp;quot;component manager&amp;quot;&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
-&lt;h2 id=&quot;wrapping-up&quot;&gt;Wrapping up!&lt;&#x2F;h2&gt;
-&lt;p&gt;Welp, this was pretty long, and hopefully illuminating or interesting. I definitely learned a lot but it&#x27;s just the beginning. For the &lt;a href=&quot;&#x2F;the-machinery-part4&quot;&gt;next post&lt;&#x2F;a&gt; I&#x27;ll start looking at the &lt;em&gt;S&lt;&#x2F;em&gt; in the ECS of The Machinery.&lt;&#x2F;p&gt;
-</content>
-	</entry>
-	<entry xml:lang="en">
 		<title>The Machinery - Part 4</title>
-		<published>2020-07-16T00:00:00+00:00</published>
-		<updated>2020-07-16T00:00:00+00:00</updated>
+		<published>2020-07-21T00:00:00+00:00</published>
+		<updated>2020-07-21T00:00:00+00:00</updated>
 		<link href="https://slowgames.github.io/the-machinery-part4/" type="text/html"/>
 		<id>https://slowgames.github.io/the-machinery-part4/</id>
 		<content type="html">&lt;p&gt;Our Machinery definitely turns the page on certain conventions. And not in a way that seems troublesome or pointless. The goal really appears to be about strong communication and making sure things describe intent. One that I didn&#x27;t expect was having &lt;em&gt;engines&lt;&#x2F;em&gt; in addition to &lt;em&gt;entity systems&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
@@ -445,6 +240,211 @@ tm_link_component_t *link = a-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;col
 &lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part4&#x2F;wavy_thing.mp4&quot;&gt;Here&lt;&#x2F;a&gt; is a short screen cap. &lt;em&gt;(How does one make gifs these days?)&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;This was also a rather large post. But thanks for taking a look while I refuse to read docs before playing around and making assumptions.&lt;&#x2F;p&gt;
 &lt;p&gt;Having come to this point I&#x27;m barely scratching the surface of what is possible. There are a lot of directions I&#x27;d like to go from here. The next set of posts will be a bit more focused on learning how to do something specific I think. Armed now as I am with the rudimentary understanding of The Machinery, I&#x27;d like to take the next steps converting this example component into the 3D sprite component I have in mind. This probably means that I&#x27;d need to start by exploring the asset import workflow and learning more about what the creation graphs can do.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>The Machinery - Part 3</title>
+		<published>2020-07-16T00:00:00+00:00</published>
+		<updated>2020-07-16T00:00:00+00:00</updated>
+		<link href="https://slowgames.github.io/the-machinery-part3/" type="text/html"/>
+		<id>https://slowgames.github.io/the-machinery-part3/</id>
+		<content type="html">&lt;p&gt;Finally! Code only this time (&lt;em&gt;probably&lt;&#x2F;em&gt;). The Machinery has a number of great samples and gives you a great little component template to get started with. It&#x27;s jam packed with &lt;em&gt;stuff&lt;&#x2F;em&gt;! It&#x27;s entirely written in &lt;strong&gt;C&lt;&#x2F;strong&gt;!&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Folks that know me probably expect me to just hop right into Rust. But not yet! Not until I understand a great deal more about The Machinery. But aside from that I really want to get out of my head a bit and sometimes the best way to do that is to just take a break from your usual patterns and habits.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The Machinery can be extended in a couple of ways. You can create custom components for the ECS (or is it an &lt;em&gt;ECE&lt;&#x2F;em&gt;), you can create new editor tags&#x2F;interfaces, and you can create nodes for the graph component. You can do quite a bit with these extension points... you can do pretty much anything. Custom data, editors, and gameplay systems all kick off from there. The Machinery is sort of wild.&lt;&#x2F;p&gt;
+&lt;p&gt;But today is not the day to figure out all the ways to do very subversive and wild systems engineering. Today is all about getting our vocab built-up and coming to an understanding the fundamentals.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;first-steps&quot;&gt;First Steps&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;strong&gt;Q:&lt;&#x2F;strong&gt; What makes a plugin to The Machinery?&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;A:&lt;&#x2F;strong&gt; Any dll&#x2F;so&#x2F;dylib, whose name begins with &lt;code&gt;tm_&lt;&#x2F;code&gt;, that exports the function:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_load_plugin&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_api_registry_api *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;bool &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The first thing provided to a plugin is a pointer to the registry &lt;em&gt;api&lt;&#x2F;em&gt;. According to the docs the registry api provides a &lt;em&gt;&amp;quot;Global registry that keeps track of loaded APIs and interface implementations.&amp;quot;&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;So out of the gate we have a distinction between an &amp;quot;API&amp;quot; and an &amp;quot;Interface&amp;quot;. Helpfully the docs immediately clarify the distinction between the two.&lt;&#x2F;p&gt;
+&lt;p&gt;An &lt;code&gt;API&lt;&#x2F;code&gt; is something with a single implementation. An &lt;code&gt;Interface&lt;&#x2F;code&gt; is something with potentially multiple implementations. Makes sense.&lt;&#x2F;p&gt;
+&lt;p&gt;The registry api includes functions (&lt;em&gt;it&#x27;s rather hard to stop myself from writing &#x27;method&#x27; everywhere&lt;&#x2F;em&gt;) to &lt;code&gt;get&lt;&#x2F;code&gt; and &lt;code&gt;set&lt;&#x2F;code&gt; an api implementation, and it has functions to &lt;code&gt;add_implementation&lt;&#x2F;code&gt;, &lt;code&gt;remove_implementation&lt;&#x2F;code&gt;, and get a list of &lt;code&gt;implementations&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Getting a list of implementations has that fun C style interface of a pointer to pointer &lt;code&gt;**&lt;&#x2F;code&gt; and you&#x27;ll be getting the number of implementations via an out arg &lt;code&gt;*count&lt;&#x2F;code&gt;. These sorts of interfaces to systems are so easy and familiar... but I&#x27;m still wary when I see it. You have to be so careful and consistent with marking things &lt;code&gt;const&lt;&#x2F;code&gt; that aren&#x27;t out arguments. It&#x27;s maybe less efficient or possibly just annoying, but I&#x27;d have preferred a struct with the count and implementations to just be returned.&lt;&#x2F;p&gt;
+&lt;p&gt;Nobody writes C that way of course, so it wouldn&#x27;t make sense for the folks at Our Machinery to suddenly start doing things like that I suppose. Also.. yeah, if I consider it more it&#x27;d be annoying to have structs for the result of every function like this. C++ has templates for this. C could just use &lt;code&gt;void*&lt;&#x2F;code&gt; but then you&#x27;d be casting for every use and boy-howdy that&#x27;s some line noise.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Ok, so that&#x27;s an intro to the &lt;code&gt;api_registry&lt;&#x2F;code&gt; and what we&#x27;re expected to use it for but what&#x27;s up with that &lt;code&gt;bool load&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
+&lt;p&gt;Based on the following two macros:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Convenience macro that either sets or remove an api based on value of `load` flag.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_set_or_remove_api&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ptr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;) \
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(load)                                      \
+        reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(name, ptr, sizeof(*ptr));         \
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else                                           &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;\
+        reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;remove&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ptr)
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Convenience macro that either adds or removes an implementation based on value of `load` flag.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ptr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;) \
+    (load ? reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;add_implementation &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;: reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)(name, ptr)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I&#x27;m lead to believe that this indicates whether the plugin is being loaded or unloaded. I didn&#x27;t yet see anything in the UI that would specifically unload a plugin, but The Machinery can be run with a &lt;code&gt;--hot-reload&lt;&#x2F;code&gt; flag. Unless I&#x27;m mistaken this facility works by renaming the plugin dll before loading it, so that when you rebuild a plugin it can be copied again and loaded. The previous loaded code would be then responsible for unregistering it&#x27;s component interfaces, apis, and other code. &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;dll-hot-reloading-in-theory-and-practice&#x2F;&quot;&gt;Here&lt;&#x2F;a&gt; is a relevant blog post on the matter.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;So now it&#x27;s clear that in order to be a plugin you need to define (and export) the expected function in your library and use the provide &lt;code&gt;api_registry&lt;&#x2F;code&gt; API to get access to any API that you require for your plugin, as well as register anything your plugin provides.&lt;&#x2F;p&gt;
+&lt;p&gt;Something I didn&#x27;t expect, because I&#x27;m rather biased and trained to think in certain ways, was that if your plugin needs to use specific APIs you need to stick them someplace... but where? Well, it&#x27;s C, so static global state apparently. :D In C, a static global is only accessible to the compilation unit it&#x27;s declared in, so you&#x27;d want to initialize any static global pointers in the &lt;code&gt;tm_load_plugin&lt;&#x2F;code&gt; function.&lt;&#x2F;p&gt;
+&lt;p&gt;To illustrate how this works in The Machinery we can just look at how the example component we&#x27;re reviewing gets a pointer to the entity API:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_entity_api *tm_entity_api;
+
+
+TM_DLL_EXPORT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;tm_load_plugin&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_api_registry_api *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reg&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;bool &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+{
+    tm_entity_api = reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_ENTITY_API_NAME);
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;One final interesting thing to note is that the &lt;code&gt;api_registry&lt;&#x2F;code&gt; will always return to you a pointer to an api, but it&#x27;s associated functions may be NULL until whatever plugin provides them has been loaded. In addition to this, if a plugin that provides the api implementation is reloaded, your static global pointer will have been updated for you.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;At this point it is already an interesting thought process to imagine what a Rust version of the this would look like. None of this is possible to do without using &lt;code&gt;unsafe&lt;&#x2F;code&gt;, although the lazy_static crate might be able to help.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;a-simple-component&quot;&gt;A Simple Component&lt;&#x2F;h2&gt;
+&lt;p&gt;Components are just structs in The Machinery. Nice and simple. The example component is declared as:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;struct tm_sprite_component_t
+{
+    float y0;
+    float frequency;
+    float amplitude;
+};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;It&#x27;s called &amp;quot;sprite component&amp;quot; because I ultimately plan to make it a 3D sprite component.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Nice and simple but certainly will require some wiring before we can &amp;quot;attach&amp;quot; it to an entity and have any property values serialized to disk with the scene.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;introducing-our-component-data-to-the-truth&quot;&gt;Introducing our component data to The Truth&lt;&#x2F;h3&gt;
+&lt;p&gt;To get started we must look to &lt;a href=&quot;https:&#x2F;&#x2F;ourmachinery.com&#x2F;post&#x2F;the-story-behind-the-truth-designing-a-data-model&#x2F;&quot;&gt;The Truth&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We need a way to describe our component and its properties as well as give it a &amp;quot;type&amp;quot;. In order to give your object&#x2F;component a type we have to decide on a type name (and calculate it&#x27;s hash apparently). The type name should be prefixed with &lt;code&gt;tm_&lt;&#x2F;code&gt; I think, and from what I&#x27;ve seen it generally just matches the struct name.&lt;&#x2F;p&gt;
+&lt;p&gt;The example code uses the preprocessor to define:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;TM_TT_TYPE__SPRITE_COMPONENT &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;TM_TT_TYPE_HASH__SPRITE_COMPONENT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_STATIC_HASH&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tm_sprite_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x788c0feb4cc58af4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ULL&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The type name is expected to be a static string, and the useful macro &lt;code&gt;TM_STATIC_HASH&lt;&#x2F;code&gt; acts as a marker for a preprocess step, a useful tool named &lt;code&gt;hash.exe&lt;&#x2F;code&gt; that can generate hashes for you, or update them in the file if they don&#x27;t match. (&lt;em&gt;this tool should probably be renamed as &lt;code&gt;tmhash.exe&lt;&#x2F;code&gt; right?&lt;&#x2F;em&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;Any properties that should be known to The Truth need to have IDs and C enums would appear to be the tool in charge of that:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;enum &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;{
+    TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; float
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;    TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; float
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Properties also have types, and The Truth has a fixed set of options here that seem to cover every useful possibility &lt;em&gt;&amp;quot;none&amp;quot;, bool, uint32, uint64, float, double, string, &amp;quot;buffer&amp;quot;, &amp;quot;reference&amp;quot;, &amp;quot;subobject&amp;quot;, &amp;quot;reference set&amp;quot;, &amp;quot;subobject set&amp;quot;&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Here is how we describe our components properties:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_the_truth_property_definition_t sprite_component_properties[] = {
+    [TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY] = { &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;frequency&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, TM_THE_TRUTH_PROPERTY_TYPE_FLOAT },
+    [TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE] = { &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;amplitude&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;, TM_THE_TRUTH_PROPERTY_TYPE_FLOAT },
+};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;So with the requisite metadata in hand we&#x27;re ready to take the remaining couple of steps to introduce our component to The Machinery by creating the type in the The Truth:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint64_t sprite_component_type = tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;create_object_type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
+    tt, TM_TT_TYPE__SPRITE_COMPONENT,
+    sprite_component_properties,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TM_ARRAY_COUNT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(sprite_component_properties));
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In certain cases you might want to have your component defaulted to some value other than a zero-initialized struct. In these cases you can create an instance of your component and set it as the default that will be cloned whenever this component is added to an entity:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;uint64_t default_object = tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quick_create_object&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
+    tt, TM_TT_TYPE_HASH__SPRITE_COMPONENT,
+    TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1.0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1.0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    -&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;);
+tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set_default_object&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, sprite_component_type, default_object);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In general you&#x27;re discouraged from doing this. Zero-initialized data is the mantra in The Machinery.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Hard not to stop for a second and pull on a thread here. The &lt;code&gt;quick_create_object&lt;&#x2F;code&gt; function is a combination of &lt;code&gt;create_object&lt;&#x2F;code&gt; and &lt;code&gt;quick_set_properties&lt;&#x2F;code&gt;. It uses varargs to essentially call a more specialized property setter. &lt;em&gt;But how on earth does this translate to updating field members on a struct?&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;It doesn&#x27;t&lt;&#x2F;strong&gt; because The Truth deals with &amp;quot;objects&amp;quot; and &amp;quot;properties&amp;quot;, and provides facilities to get &lt;em&gt;read pointers&lt;&#x2F;em&gt; and &lt;em&gt;write pointers&lt;&#x2F;em&gt; to objects which let you &lt;em&gt;get&lt;&#x2F;em&gt; and &lt;em&gt;set&lt;&#x2F;em&gt; property values on objects in a thread-safe way. The type and value you&#x27;re setting up don&#x27;t deal with our component struct directly, but let&#x27;s put a pin in this trail of thought for now and quickly mention &amp;quot;aspects&amp;quot; in The Truth.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;em&gt;Aspects&lt;&#x2F;em&gt; in The Truth are an &lt;em&gt;interface&lt;&#x2F;em&gt; that provide specific functionalities to object types. This happens to be the extension point which gives us the ability to have a standard editor ui for interaction with our component if desired. Things like custom gizmos in the viewport can be setup this way if I understand correctly.&lt;&#x2F;p&gt;
+&lt;p&gt;I don&#x27;t see it used anywhere else in the example component, but it does setup an editor ui aspect for the component with a completely default implementation for the &lt;code&gt;tm_ci_editor_ui_i&lt;&#x2F;code&gt; interface:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* static global handle to the interface *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_ci_editor_ui_i *editor_aspect = &amp;amp;(tm_ci_editor_ui_i) { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;};
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* defined in our type creation function *&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;
+tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;set_aspect&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, sprite_component_type, TM_CI_EDITOR_UI, editor_aspect);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Looking at the docs for this interface this should mark the component as enabled in the editor with no special handling or representation in the viewports or editor gizmos.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;All of the previous setup was handled in a short function &lt;code&gt;static void truth__create_types(struct tm_the_truth_o *tt)&lt;&#x2F;code&gt;. A pointer to this function is given to the truth as an implementation of the &lt;code&gt;tm_the_truth_create_types_i&lt;&#x2F;code&gt; interface (which is just a single function pointer):&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(reg, load, TM_THE_TRUTH_CREATE_TYPES_INTERFACE_NAME, truth__create_types);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Gotta wonder now, how is it handled that a type fundamentally changes when you reload a plugin? Does The Truth keep track of this somehow?&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;setting-up-our-component-for-use-with-entities&quot;&gt;Setting up our component for use with entities&lt;&#x2F;h2&gt;
+&lt;p&gt;So, our component is a struct that we want to store on an entity, but it&#x27;s key data is also kept in The Truth. Let&#x27;s look first at how we can make it possible to associate our struct with an entity.&lt;&#x2F;p&gt;
+&lt;p&gt;The entity api defines a specific interface for creating components &lt;code&gt;tm_entity_create_component_i&lt;&#x2F;code&gt; and we setup an implementation of this interface as such:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_add_or_remove_implementation&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(reg, load, TM_ENTITY_CREATE_COMPONENT_INTERFACE_NAME, component__create);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In our function &lt;code&gt;component__create&lt;&#x2F;code&gt; we add an implementation of the &lt;code&gt;tm_component_i&lt;&#x2F;code&gt; interface and register it with the &lt;em&gt;entity context&lt;&#x2F;em&gt;:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_component_i component = {
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= TM_TT_TYPE__SPRITE_COMPONENT,
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bytes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= sizeof(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_sprite_component_t),
+    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;load_asset &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= component__load_asset,
+};
+
+tm_entity_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;register_component&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(ctx, &amp;amp;component);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Our implementation of &lt;code&gt;tm_component_i&lt;&#x2F;code&gt; provides probably the absolute minimum. The name and bytes fields appear to be obvious so what is the &lt;code&gt;load_asset&lt;&#x2F;code&gt; function responsible for? According to it&#x27;s docs this function is responsible for loading data from The Truth. We assign a pointer to our function &lt;code&gt;component__load_asset&lt;&#x2F;code&gt; which is implemented as:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;component__load_asset&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(
+    tm_component_manager_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;man&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    tm_entity_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;c_vp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_the_truth_o *&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;,
+    uint64_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;asset&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;)
+{
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_sprite_component_t *c = c_vp;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_the_truth_object_o *asset_r = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tm_tt_read&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset);
+    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;y0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;;
+    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;frequency &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get_float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset_r, TM_TT_PROP__SPRITE_COMPONENT__FREQUENCY);
+    c-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;amplitude &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;= tm_the_truth_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get_float&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(tt, asset_r, TM_TT_PROP__SPRITE_COMPONENT__AMPLITUDE);
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Fantastically straight forward. Get a read pointer to the object (here called &amp;quot;asset&amp;quot;), then update the component struct with the values that were stored in The Truth.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;understanding-entities-and-the-truth-a-bit-better&quot;&gt;Understanding entities and The Truth a bit better&lt;&#x2F;h2&gt;
+&lt;p&gt;It isn&#x27;t clear from any doc comments when precisely this function will be called or how to reflect changes to the component back into The Truth but my assumption at the moment is that when we registered the editor ui aspect with the object type, we&#x27;re setting up a way to get a UI to update values, which would call this load_asset function.&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s not hard to test I guess...&lt;&#x2F;p&gt;
+&lt;p&gt;First up, let&#x27;s open the editor and add our component to the world entity:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;add-component.png&quot; alt=&quot;add_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;And here is the component editor we get:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;sprite-component-editor.png&quot; alt=&quot;edit_component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Before I remove the editor aspect and test what happens there, maybe I can add a log line to our &lt;code&gt;component__load_asset&lt;&#x2F;code&gt; function and see if this gets called every time we change a property value in the editor.&lt;&#x2F;p&gt;
+&lt;p&gt;We&#x27;ll need a handle to the log api first:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static struct&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt; tm_logger_api* tm_logger_api;
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#include &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;foundation&#x2F;log.h&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;gt;
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;* .... later inside tm_load_plugin ... *&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;
+tm_logger_api = reg-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_LOGGER_API_NAME);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we can add a little log output as a treat:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;tm_logger_api-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;(TM_LOG_TYPE_INFO, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Howdy from component__load_asset!&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c0c5ce;&quot;&gt;&amp;quot;);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Build the plugin (remember to run with the &lt;code&gt;--hot-reload&lt;&#x2F;code&gt; flag), return to the editor change a value on the component editor &lt;em&gt;aaaaaaand&lt;&#x2F;em&gt;.... no log output:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;no-logs.png&quot; alt=&quot;no-logs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Is this because the logs are filtered or because my assumptions were incorrect? Let&#x27;s just add logs to all the things and see... &lt;strong&gt;crash&lt;&#x2F;strong&gt;. OH! I uh, did a dumb thing and put a log line at the start of &lt;code&gt;tm_load_plugin&lt;&#x2F;code&gt; before I had a refrence to the api. :facepalm:&lt;&#x2F;p&gt;
+&lt;p&gt;After I fixed that and restarted the editor, oila! There are logs... &lt;strong&gt;and&lt;&#x2F;strong&gt; I&#x27;m seeing that &lt;code&gt;load_asset&lt;&#x2F;code&gt; is indeed called when editing the component.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;logs.png&quot; alt=&quot;logs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;So I don&#x27;t know why the log output didn&#x27;t appear after a hot reload, but I can put that investigation on to the backburner for a while. So I&#x27;ll quickly clear the console, clear all log lines from the plugin, and finally rebuild to make sure everything continues to work as expected... and the log lines are still there. I clearly do not have a complete picture of the plugin hot-loading so I&#x27;m betting that by removing the editor ui aspect we won&#x27;t see a change, unless perhaps we close and restart the editor... which was correct.&lt;&#x2F;p&gt;
+&lt;p&gt;But perhaps not surprising, after rebuilding and reloading the editor we no longer have the ability to add the component to the entity!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;slowgames.github.io&#x2F;the-machinery-part3&#x2F;no-component.png&quot; alt=&quot;no-component&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;This is interesting to consider. Without setting up the editor ui aspect for an object type in The Truth, we can&#x27;t create a component on the entity in the editor... but where exactly did we hook that relationship up?&lt;&#x2F;p&gt;
+&lt;p&gt;It appears that, when we register an implementation for the &lt;code&gt;tm_entity_create_component_i&lt;&#x2F;code&gt; interface, the component name is being used to connect The Truth to our entity oriented code. And what is also interesting is that in docs for the interface we register, the implementation is actually referred to as a &lt;em&gt;&amp;quot;component manager&amp;quot;&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;wrapping-up&quot;&gt;Wrapping up!&lt;&#x2F;h2&gt;
+&lt;p&gt;Welp, this was pretty long, and hopefully illuminating or interesting. I definitely learned a lot but it&#x27;s just the beginning. For the &lt;a href=&quot;&#x2F;the-machinery-part4&quot;&gt;next post&lt;&#x2F;a&gt; I&#x27;ll start looking at the &lt;em&gt;S&lt;&#x2F;em&gt; in the ECS of The Machinery.&lt;&#x2F;p&gt;
 </content>
 	</entry>
 	<entry xml:lang="en">
