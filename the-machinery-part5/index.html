@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <!-- viewport-fit=cover is to support iPhone X rounded corners and notch in landscape-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+
+  <title>Slowgames</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;print.css" media="print">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;poole.css">
+  <link rel="stylesheet" href="https:&#x2F;&#x2F;slowgames.github.io&#x2F;hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+
+  
+  
+</head>
+
+<body class=" ">
+  
+  <div class="sidebar">
+    <div class="container sidebar-sticky">
+      <div class="sidebar-about">
+        
+        <a href="https:&#x2F;&#x2F;slowgames.github.io">
+          <h1>Slowgames</h1>
+        </a>
+        
+        <p class="lead">Building Things. Making Stuff. Procgen.</p>
+        
+        
+      </div>
+
+      <ul class="sidebar-nav">
+        
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;github.com&#x2F;photex">Github</a></li>
+        
+        <li class="sidebar-nav-item"><a href="https:&#x2F;&#x2F;twitter.com&#x2F;_photex_">Twitter</a></li>
+        
+        
+      </ul>
+
+      © 2020 Chip Collier
+    </div>
+  </div>
+  
+
+  <div class="content container">
+    
+<div class="post">
+  <h1 class="post-title">Clang-tidy, VS Code, The Machinery... CMake?</h1>
+  <span class="post-date">2020-07-26</span>
+  <p>For some developers the topic of static analysis is contentious. But I think it's an important tool to have in your toolbox especially when writing C or C++ code. Unfortunately the tools are either expensive or involve a lot of tip-toeing to avoid the false positives that tend to make developers toss their hands up and just live dangerously.</p>
+<p>But for me I still think it's worth it. I'd rather get clang-tidy running decently enough and periodically adjust what checks are run, or to use a more extensive set of warnings than the typical default for a C++ compiler.</p>
+<p>Rust put a lot of emphasis on warnings for things that wouldn't exactly make code unsound, but definitely helps you write code that is easier to change later. I think clang-tidy and <code>-Wall -Wextra</code> can help when writing C or C++ in the same way.</p>
+<p>More involved static analysis tools are much better suited when you're writing safety-critical code that must conform to standards such as MISRA or AUTOSAR. And in those domains it appears to be relatively common to just use simulink and have it generate your C code and apply futher analysis and proofs after the fact. Or there is Ada/Spark that can be formally verified, then have C code generated from it.</p>
+<p>But game development, tool development, is a <em>creative endeavor</em> and <em>you can't formally prove that an artist or designer is empowered or inspired by your work.</em></p>
+<p>And yet, I still feel like some basic tools can help keep me on a path to make my creative efforts more useful over a longer period of time. Our Machinery also belives that in some sense given that the use of clang-format is part of their design guidelines for code.</p>
+<p>I asked about clang-tidy on the Our Machinery forums though and in general, the team aren't users or fans. Too many experiences with false positives and the like. Well, that won't stop me from trying a couple of things for my sake. :D</p>
+<h3 id="it-s-dangerous-to-go-alone-take-this">It's dangerous to go alone.. take this!</h3>
+<p>The easiest (and free) couple of tools would be <strong>cppcheck</strong> and <strong>clang-tidy</strong>.</p>
+<p>Visual Studio can show you diagnostic output from the compiler, as well as from clang-tidy. Super great. VS Code has a couple of extensions for it's lint system that can display output from a wide variety of tools but unfortunately it doesn't appear that you can easily &quot;stack&quot; linters and have the output from multiple sources without building custom extensions.</p>
+<h3 id="visual-studio-2019">Visual Studio 2019</h3>
+<p>I think that most users of Visual Studio are probably already aware of how the built-in linters work. And what's more, is that they're probably using Resharper or VAX. <em>There is also an interesting looking <a href="https://marketplace.visualstudio.com/items?itemName=caphyon.ClangPowerTools">Clang Power Tools</a> extension but I haven't tried it yet.</em></p>
+<p>Whether you're using CMake and &quot;Open Folder&quot; workflow, or using an msbuild project (as we end up doing when building The Machinery plugins since tmbuild uses premake to generate msbuild projects), the only thing you have to do to start seeing clang-tidy output is to set a project property for clang-tidy checks.</p>
+<p>Documentation for setting it up is <a href="https://docs.microsoft.com/en-us/cpp/code-quality/clang-tidy?view=vs-2019">here</a>.</p>
+<p>I am curious though, since our projects are being generated via premake, after I set my lints up, they wouldn't survive a project refresh. Can premake support adding this property to a project?</p>
+<p>There doesn't seem to be an official or otherwise widely used cppcheck extension for Visual Studio.</p>
+<p>Output from builds, such as errors and warnings are so far all correctly parsed and shown in the &quot;Error List&quot; tool window and correctly navigate to the file and line which you can see here:</p>
+<p><img src="https://slowgames.github.io/the-machinery-part5/vs2019-error-list.png" alt="error_list" /></p>
+<p>My simple test of these is to simply comment out the <code>TM_SHUTDOWN_TEMP_ALLOCATOR(ta);</code> at the end of the engine update function and verify that I get the intended warning that we're missing it.</p>
+<h3 id="visual-studio-code">Visual Studio Code</h3>
+<p>It probably comes as no surprise that there is a buffet of extensions for using clang tools in VS Code. I chose to go with the <a href="https://marketplace.visualstudio.com/items?itemName=notskm.clang-tidy">clang-tidy</a> extension. And I was not disappointed after getting over some configuration hurdles.</p>
+<p>A second extension that I tried out and was fairly pleased with was the <a href="https://marketplace.visualstudio.com/items?itemName=jbenden.c-cpp-flylint">C/C++ Advanced Lint</a> extension. Of particular interest is that it supports cppcheck. It also support &quot;clang&quot; but not clang-tidy which <em>is a choice</em>.</p>
+<p>I'll avoid a rather long and windy exposition about how I arrived at the configuration I'm using and just place it here so you can refer to at your leisure:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">{
+    &quot;</span><span style="color:#a3be8c;">clang-tidy.compilerArgs</span><span style="color:#c0c5ce;">&quot;: [
+        &quot;</span><span style="color:#a3be8c;">-DTM_OS_WINDOWS</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-IOurMachinery/headers</span><span style="color:#c0c5ce;">&quot;
+    ],
+    &quot;</span><span style="color:#a3be8c;">clang-tidy.compilerArgsBefore</span><span style="color:#c0c5ce;">&quot;: [
+        &quot;</span><span style="color:#a3be8c;">-W-std=c11</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wall</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wextra</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Weverything</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wno-unused-local-typedef</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wno-missing-braces</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wno-microsoft-anon-tag</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-Wno-unused-command-line-argument</span><span style="color:#c0c5ce;">&quot;
+    ],
+    &quot;</span><span style="color:#a3be8c;">clang-tidy.blacklist</span><span style="color:#c0c5ce;">&quot;: [
+        &quot;</span><span style="color:#a3be8c;">foundation/.*</span><span style="color:#c0c5ce;">&quot; </span><span style="color:#65737e;">// Really don&#39;t want to be seeing output from The Machinery headers we can&#39;t control.
+    </span><span style="color:#c0c5ce;">],
+    &quot;</span><span style="color:#a3be8c;">clang-tidy.checks</span><span style="color:#c0c5ce;">&quot;: [
+        &quot;</span><span style="color:#a3be8c;">bugprone-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-bugprone-branch-clone</span><span style="color:#c0c5ce;">&quot;, </span><span style="color:#65737e;">// TM_STATIC_HASH
+        </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">clang-analyzer-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">cert-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">cppcoreguidelines-init-variables</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">hicpp-signed-bitwise</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">misc-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">performance-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">portability-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">readability-*</span><span style="color:#c0c5ce;">&quot;,
+        &quot;</span><span style="color:#a3be8c;">-readability-uppercase-literal-suffix</span><span style="color:#c0c5ce;">&quot;
+    ]
+}
+</span></code></pre>
+<p>This config provides decent feedback when coding. Clang-tidy isn't the fastest in the world at running checks (well, it's running <em>a lot</em> of checks). By including the warnings that I'd otherwise be using during a build I'm getting feedback early as well. I like to work with <code>-Werror</code> when possible so having some feedback early on helps. You can see an example of the results here:</p>
+<p><img src="https://slowgames.github.io/the-machinery-part5/vscode-error-list.png" alt="vscode_error_list" /></p>
+<p>Pressing <code>F8</code> will jump through the problem list and visit the files affected. Very nice!</p>
+<h4 id="what-about-cppcheck">What about cppcheck?</h4>
+<p>cppcheck seems to have a lot going for it and I'll probably spend some more time with it. Once example where it digs a tad deeper than clang-tidy is that in the <code>TM_INIT_TEMP_ALLOCATOR(ta);</code> macro it notices and reports that the helpfully named variable used to give us a warning regarding the missing shutdown call, is actually not being initialized.</p>
+<p>The problem for me comes with the carray utils that are a part of The Machinery. These trigger a lot of errors around null pointers and the like. They are very likely false positives since the code demonstrably works. But you can't fault cppcheck for being upset that you basically take a nullpointer.. <em>then push a value on to it</em> via a very nested set of macros.</p>
+<p>I assume there is a test suite being run before releases and so on that would catch any regressions and the code probably isn't being touched much... but it's a problem for me that we get FP on it since the &quot;lib&quot; is essentially a collection of macros that you inline to your compilation unit to use. Which means I'd be getting these errors quite a bit. And the checks themselves I wouldn't want to disable.</p>
+<p>Unfortunately I can't submit this code to the cppcheck project as a false positive example. I might try and replicate it with a set of example macros... but at some point all you're doing is <em>giving in to the itch</em> and not learning or doing the things I wish I would be.</p>
+<h4 id="sticking-with-clang-tidy-for-now">Sticking with clang-tidy for now.</h4>
+<p>For the moment I'm happy with what I'm getting from clang-tidy and VS Code. I should say that, cppcheck works pretty great and quick. The reason I didn't want to use it was because of it's results from looking into code that's essentially out of my control.</p>
+<p>Unused parameters are things I like to have warnings for. Also, unusued field initializers. The Machinery template premake script is disabling these, which I'll leave as-is, but at least with clang-tidy I'll get my precious squiggles. To deal with missing field initializers one option is to use the nice C syntax for named field initialization. For unused parameters, either my interface is poorly specified, or I'm implementing an interface for The Machinery and I literally don't plan or need to use some of the parameters. For that case I have the following solution:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#b48ead;">#define </span><span style="color:#8fa1b3;">UNUSED</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">x</span><span style="color:#c0c5ce;">) (</span><span style="color:#b48ead;">void</span><span style="color:#c0c5ce;">)(x)
+</span></code></pre>
+<p>Some folks might be annoyed with this. Fine. :D But to me this is a very direct way to letting future <em>readers</em> of the code that, yes, this parameter is indeed intentionally unused.</p>
+<h3 id="but-what-about-build-output">But what about build output?</h3>
+<p>With VS2019 we're getting correctly parsed output from msbuild so that you see both the linter warning <em>and</em> the build error (since I'm using <code>-Werror</code>). But in VS Code this hasn't worked for me yet. Something is not quite right with the output from the build and the result is that errors, or warnings, are not associated with any workspace files. Nor can I ctrl+click the paths:</p>
+<p><img src="https://slowgames.github.io/the-machinery-part5/vscode-no-file.png" alt="vscode-no-file" /></p>
+<p>A very clear issue can be seen when I do try to ctrl+click the path in the output.</p>
+<p>My guess is that, this is a problem with project structure. I have the premake script in a subfolder of the workspace, and I must run the build using the following task definition:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">{
+    &quot;</span><span style="color:#a3be8c;">version</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">2.0.0</span><span style="color:#c0c5ce;">&quot;,
+    &quot;</span><span style="color:#a3be8c;">type</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">shell</span><span style="color:#c0c5ce;">&quot;,
+    &quot;</span><span style="color:#a3be8c;">tasks</span><span style="color:#c0c5ce;">&quot;: [
+        {
+            &quot;</span><span style="color:#a3be8c;">label</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">Build CosmicTrash</span><span style="color:#c0c5ce;">&quot;,
+            &quot;</span><span style="color:#a3be8c;">group</span><span style="color:#c0c5ce;">&quot;: {
+                &quot;</span><span style="color:#a3be8c;">kind</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">build</span><span style="color:#c0c5ce;">&quot;,
+                &quot;</span><span style="color:#a3be8c;">isDefault</span><span style="color:#c0c5ce;">&quot;: </span><span style="color:#d08770;">true
+            </span><span style="color:#c0c5ce;">},
+            &quot;</span><span style="color:#a3be8c;">windows</span><span style="color:#c0c5ce;">&quot;: {
+                &quot;</span><span style="color:#a3be8c;">command</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">tmbuild.exe -c Release --clang</span><span style="color:#c0c5ce;">&quot;
+            },
+            &quot;</span><span style="color:#a3be8c;">args</span><span style="color:#c0c5ce;">&quot;: [],
+            &quot;</span><span style="color:#a3be8c;">problemMatcher</span><span style="color:#c0c5ce;">&quot;: [
+                &quot;</span><span style="color:#a3be8c;">$msCompile</span><span style="color:#c0c5ce;">&quot;
+            ],
+            &quot;</span><span style="color:#a3be8c;">options</span><span style="color:#c0c5ce;">&quot;: {
+                &quot;</span><span style="color:#a3be8c;">cwd</span><span style="color:#c0c5ce;">&quot;: &quot;</span><span style="color:#a3be8c;">${workspaceFolder}/CosmicTrash</span><span style="color:#c0c5ce;">&quot;
+            }
+        }
+    ],
+}
+</span></code></pre>
+<p>I feel like, if the build output would use absolute paths then we wouldn't have an issue. But the premake generated project files are using relative paths from the build directory they create.</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&lt;</span><span style="color:#bf616a;">ItemGroup</span><span style="color:#c0c5ce;">&gt;
+    &lt;</span><span style="color:#bf616a;">ClCompile </span><span style="color:#d08770;">Include</span><span style="color:#c0c5ce;">=&quot;</span><span style="color:#a3be8c;">..\..\plugins\sprite_component\sprite_component.c</span><span style="color:#c0c5ce;">&quot; /&gt;
+&lt;/</span><span style="color:#bf616a;">ItemGroup</span><span style="color:#c0c5ce;">&gt;
+</span></code></pre>
+<p>I don't see much in the docs regarding what options I have for dealing with this. But after moving the project around and trying to build from another location I at least narrowed one thing down. There is a <code>location</code> key in the project definition in our premake script. It's value was <code>build/sprite_component</code> and this now becomes clear how we could try and move forward.</p>
+<p>If I set the location of the project to <code>&quot;.&quot;</code> then I can ctrl+click on errors or warnings. Not because I fixed the issue though. It's just a coincidence of project location. Because instead of <code>../..</code> we now have <code>..</code> and since we're running from a subdirectory it ends up correctly finding the file... <em>but only when using ctrl+click</em>. The error matcher still can't figure out where this file is.</p>
+<p>hrm... So I guess... maybe it works from the workspace root? <strong>NOPE</strong>.</p>
+<p>Does the error matcher work at all? Is it ever supposed to be output to the <code>Problems</code> tool window?</p>
+<p>At this point I'm getting fed up. I'm intensely unsatisfied that I can't reach <em>Emacs levels of compilation output functionality</em> (using a shortcut to cycle through compilation warnings and errors).</p>
+<p>Could this be, because we're using clang-cl? Does msvc output paths differently?</p>
+<p>First I'll move things back into a subdirectory because random build files everywhere <em>suuuuuuuucks</em>.</p>
+<p>My directory structure now looks like:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&lt;workspace&gt;/
+|_ CosmicTrash/
+|_|_ premake5.lua
+</span></code></pre>
+<p>Working directory for the build is <code>CosmicTrash</code>, project location in the premake script is <code>&quot;.&quot;</code>.</p>
+<p>Output from clang-cl: <code>plugins\sprite_component\sprite_component.c(85,5)</code>.</p>
+<p>Output from msvc: <code>C:\projects\slowgames\CosmicTrash\plugins\sprite_component\sprite_component.c(85,5)</code></p>
+<p><strong>WHOA WHOA WHOA</strong> <em>wait a second</em>... has this all been a misdirection because I'm using clang? And I still dont get compiler matches... so does compiler output <em>ever</em> get sent to the problems window?</p>
+<p>Let's back up here. Let's roll this all the way back to the beginning. Did msvc always give absolute paths?</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">C:\projects\slowgames\CosmicTrash&gt;tmbuild -c Release --clang
+Building configurations...
+Running action &#39;vs2019&#39;...
+Generated CosmicTrash.sln...
+Generated build/sprite_component/sprite_component.vcxproj...
+Done (74ms).
+Microsoft (R) Build Engine version 16.6.0+5ff7b0c9e for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+..\..\plugins\sprite_component\sprite_component.c(85,5): error : unused variable &#39;ta_TM_SHUTDOWN_TEMP_ALLOCATOR_is_missing&#39; [-Werror,-Wunused-variable] [C:\projects\slowgames\CosmicTrash\build
+\sprite_component\sprite_component.vcxproj]
+C:\projects\slowgames\OurMachinery\headers\foundation/temp_allocator.h(98,14): message : expanded from macro &#39;TM_INIT_TEMP_ALLOCATOR&#39; [C:\projects\slowgames\CosmicTrash\build\sprite_component\
+sprite_component.vcxproj]
+&lt;scratch space&gt;(28,1): message : expanded from here [C:\projects\slowgames\CosmicTrash\build\sprite_component\sprite_component.vcxproj]
+
+C:\projects\slowgames\CosmicTrash&gt;rm -rf CosmicTrash.sln build
+
+C:\projects\slowgames\CosmicTrash&gt;tmbuild -c Release
+Building configurations...
+Running action &#39;vs2019&#39;...
+Generated CosmicTrash.sln...
+Generated build/sprite_component/sprite_component.vcxproj...
+Done (75ms).
+Microsoft (R) Build Engine version 16.6.0+5ff7b0c9e for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  sprite_component.c
+C:\projects\slowgames\CosmicTrash\plugins\sprite_component\sprite_component.c(85,5): error C2220: the following warning is treated as an error [C:\projects\slowgames\CosmicTrash\build\sprite_c
+omponent\sprite_component.vcxproj]
+C:\projects\slowgames\CosmicTrash\plugins\sprite_component\sprite_component.c(85,5): warning C4101: &#39;ta_TM_SHUTDOWN_TEMP_ALLOCATOR_is_missing&#39;: unreferenced local variable [C:\projects\slowgam
+es\CosmicTrash\build\sprite_component\sprite_component.vcxproj]
+
+C:\projects\slowgames\CosmicTrash&gt;
+</span></code></pre>
+<p><em>Bruh</em></p>
+<h3 id="y-all-just-made-me-go-all-out">Y'all just made me go all out</h3>
+<p>My quest to live the zen of <code>tmbuild</code> has faltered. <em>Let's whip out a 10 line cmake script and see what we get when we do.</em> Because I'm just convinced that it'll work where tmbuild/premake is failing me.</p>
+<blockquote>
+<p>Lemme go on record and just wonder out loud why people are avoiding CMake in favor of less functional tools that just bake msbuild projects.... when even Microsoft is going hard on cross-platform builds with CMake?</p>
+<p>Do I love CMake? Nope. It's a dumpster fire that does waaaaay too much. It gets better with every release but there are volumes of old and bad, and I'm not sure how to take the new conventions and make them policy. So I 100% understand where people are coming from when they learn to avoid using it.</p>
+<p>On the other hand... it's the closest thing we get to a standard build system for C and C++. It does the damned job and is supported as a native project model for basically every IDE or editor used by the community at large. It works everywhere (that I know of) and can be bootstrapped from tools pretty easily thanks to releases including &quot;portable&quot; options in self-contained archives.</p>
+</blockquote>
+<p>The Machinery is written in C. The premake script is mostly just setting some common settings and ensuring the output of the build goes into the <code>TM_SDK_DIR/bin/plugins</code>. We can replicate this for great justice and I'm sure everybody reading is straight up:</p>
+<p><img src="/go-for-it.jpg" alt="go-for-it" /></p>
+<h4 id="hold-my-beer">Hold my beer</h4>
+<p>So I'm talking <em>a lot of shit</em> right now, but we can test really quickly whether there is even a chance this actually works. We don't even have to try and replicate the premake build because a single shared library target which can't find the SDK will give us error output and we'll see if it shows up.</p>
+<p>First step, install the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools">cmake tools</a> extension.</p>
+<p>Second step is to add a <code>CMakeLists.txt</code> to the workspace root:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#96b5b4;">cmake_minimum_required</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">VERSION </span><span style="color:#c0c5ce;">3.15)
+</span><span style="color:#96b5b4;">project</span><span style="color:#c0c5ce;">(Slowgames </span><span style="color:#bf616a;">VERSION </span><span style="color:#c0c5ce;">0.1.0)
+</span><span style="color:#96b5b4;">add_library</span><span style="color:#c0c5ce;">(cosmic_trash </span><span style="color:#bf616a;">SHARED </span><span style="color:#c0c5ce;">CosmicTrash/plugins/sprite_component/sprite_component.c)
+</span></code></pre>
+<p>Third step, let the extension configure using the &quot;Visual Studio Community 2019 - amd64&quot; kit. Use the &quot;Release&quot; variant. <em>All of which is just available from the toolbar: <img src="https://slowgames.github.io/the-machinery-part5/cmake-toolbar.png" alt="cmake-toolbar" /></em></p>
+<p>Finally we build, knowing full well we'll get an error... aaaaand.... YES:</p>
+<p><img src="https://slowgames.github.io/the-machinery-part5/compiler-output-in-problems-window.png" alt="we-got-problems" /></p>
+<p>The CMake tools for VS Code do not use the terminal and it bundles a suite of output parsers that apparently work.</p>
+<p>However, if I configure the build with clang it can't parse the output...</p>
+<p>So let's check the score:</p>
+<table><thead><tr><th></th><th>CMake Build</th><th>CMake - tasks.json</th><th>tmbuild</th></tr></thead><tbody>
+<tr><td>MSVC</td><td>List ✔ Click ✖</td><td>List ✖ Click ✔</td><td>List ✖ Click ✔</td></tr>
+<tr><td>CLANG</td><td>List ✖ Click ✖</td><td>List ✖ Click ✖</td><td>List ✖ Click ✖</td></tr>
+</tbody></table>
+<p>For a moment I wondered whether I'm just barking up the wrong tree and the problem matcher does actually work since the output is colored by warning and error severity. Removing the warning matcher from the task however didn't change the fact that output is colored.</p>
+<p>I've changed the task type from &quot;shell&quot; to &quot;process&quot;. I've run builds using cl.exe directly as well. No dice. Either the standard cpp tools in VS Code are currently broken and not working as documented. Or something beyond my capacity to deal with right now is the root of the problem.</p>
+<h3 id="where-i-m-at-at-the-end-of-all-this">Where I'm at, at the end of all this...</h3>
+<p><strong>I'm wrong.</strong> <em>tmbuild is all fine and dandy</em>. It's the <em>environment</em> I'm working in that conspires against me. VS Code just isn't working. Not even their own documentation works correctly. Even if you have a simple task that runs cl.exe on a file containing an intentional error, the <code>$msCompile</code> problem matcher <em>will not</em> give you what you need. (circa 1.47.3)</p>
+<p>Meanwhile, not being able to ctrl+click the path with clang, that's <em>sorta</em> fixed by adding <code>-fdiagnostics-absolute-paths</code> to the clang options in premake5.lua. 👍 I say sorta because it works sometimes but not always.</p>
+<hr />
+<p>What I want most is to have the output from the build included in the Problems tool window. It appears that my only option would be to use CMake and MSVC until sometime in the future when any of this works again.</p>
+<p>For those curious, here is the start of the_machinery.cmake:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(NOT TM_SDK_DIR)
+    </span><span style="color:#96b5b4;">message</span><span style="color:#c0c5ce;">(FATAL &quot;</span><span style="color:#a3be8c;">TM_SDK_DIR is not set!</span><span style="color:#c0c5ce;">&quot;)
+</span><span style="color:#b48ead;">endif</span><span style="color:#c0c5ce;">()
+
+</span><span style="color:#96b5b4;">set</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">CMAKE_MSVC_RUNTIME_LIBRARY </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">MultiThreaded</span><span style="color:#c0c5ce;">$</span><span style="color:#a3be8c;">&lt;</span><span style="color:#c0c5ce;">$</span><span style="color:#a3be8c;">&lt;</span><span style="color:#bf616a;">CONFIG</span><span style="color:#a3be8c;">:</span><span style="color:#bf616a;">Debug</span><span style="color:#a3be8c;">&gt;:</span><span style="color:#bf616a;">Debug</span><span style="color:#a3be8c;">&gt;</span><span style="color:#c0c5ce;">&quot;)
+
+</span><span style="color:#96b5b4;">set</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">TM_SDK_HEADERS_DIR </span><span style="color:#c0c5ce;">${</span><span style="color:#bf616a;">TM_SDK_DIR</span><span style="color:#c0c5ce;">}/headers)
+</span><span style="color:#96b5b4;">set</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">TM_SDK_PLUGINS_DIR </span><span style="color:#c0c5ce;">${</span><span style="color:#bf616a;">TM_SDK_DIR</span><span style="color:#c0c5ce;">}/bin/plugins)
+
+</span><span style="color:#96b5b4;">macro</span><span style="color:#c0c5ce;">(</span><span style="color:#8fa1b3;">tm_plugin </span><span style="color:#c0c5ce;">target_name)
+    </span><span style="color:#96b5b4;">add_library</span><span style="color:#c0c5ce;">(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} </span><span style="color:#bf616a;">SHARED </span><span style="color:#c0c5ce;">${</span><span style="color:#bf616a;">ARGN</span><span style="color:#c0c5ce;">})
+    </span><span style="color:#96b5b4;">set_target_properties</span><span style="color:#c0c5ce;">(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} </span><span style="color:#bf616a;">PROPERTIES</span><span style="color:#c0c5ce;">
+        C_STANDARD 11
+        OUTPUT_NAME &quot;tm_${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">}&quot;
+        RUNTIME_OUTPUT_DIRECTORY &quot;${</span><span style="color:#bf616a;">TM_SDK_PLUGINS_DIR</span><span style="color:#c0c5ce;">}&quot;
+    )
+    if (WIN32)
+        target_compile_definitions(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE &quot;TM_OS_WINDOWS&quot; &quot;_CRT_SECURE_NO_WARNINGS&quot;)
+        if (CMAKE_BUILD_TYPE MATCHES &quot;Debug&quot;)
+            target_compile_definitions(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE &quot;TM_CONFIGURATION_DEBUG&quot; &quot;DEBUG&quot;)
+        else()
+            target_compile_definitions(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE &quot;TM_CONFIGURATION_RELEASE&quot; &quot;_DEBUG&quot; &quot;NDEBUG&quot;)
+        endif()
+        if (MSVC)
+            target_compile_options(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE
+                /W4 /WX
+                /wd4057 </span><span style="color:#65737e;"># Slightly different base types. Converting from type with volatile to without.</span><span style="color:#c0c5ce;">
+                /wd4100 </span><span style="color:#65737e;"># Unused formal parameter. I think unusued parameters are good for documentation.</span><span style="color:#c0c5ce;">
+                /wd4152 </span><span style="color:#65737e;"># Conversion from function pointer to void *. Should be ok.</span><span style="color:#c0c5ce;">
+                /wd4200 </span><span style="color:#65737e;"># Zero-sized array. Valid C99.</span><span style="color:#c0c5ce;">
+                /wd4201 </span><span style="color:#65737e;"># Nameless struct/union. Valid C11.</span><span style="color:#c0c5ce;">
+                /wd4204 </span><span style="color:#65737e;"># Non-constant aggregate initializer. Valid C99.</span><span style="color:#c0c5ce;">
+                /wd4206 </span><span style="color:#65737e;"># Translation unit is empty. Might be #ifdefed out.</span><span style="color:#c0c5ce;">
+                /wd4214 </span><span style="color:#65737e;"># Bool bit-fields. Valid C99.</span><span style="color:#c0c5ce;">
+                /wd4221 </span><span style="color:#65737e;"># Pointers to locals in initializers. Valid C99.</span><span style="color:#c0c5ce;">
+                /wd4702 </span><span style="color:#65737e;"># Unreachable code. We sometimes want return after exit() because otherwise we get an error about no return value.</span><span style="color:#c0c5ce;">
+            )
+            target_link_options(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE /ignore:4099)
+        endif()
+    endif()
+    if(${</span><span style="color:#bf616a;">CMAKE_C_COMPILER_ID</span><span style="color:#c0c5ce;">} MATCHES &quot;Clang&quot;)
+        target_compile_options(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE
+            -Wno-missing-field-initializers   </span><span style="color:#65737e;"># = {0} is OK.</span><span style="color:#c0c5ce;">
+            -Wno-unused-parameter             </span><span style="color:#65737e;"># Useful for documentation purposes.</span><span style="color:#c0c5ce;">
+            -Wno-unused-local-typedef         </span><span style="color:#65737e;"># We don&#39;t always use all typedefs.</span><span style="color:#c0c5ce;">
+            -Wno-missing-braces               </span><span style="color:#65737e;"># = {0} is OK.</span><span style="color:#c0c5ce;">
+            -Wno-microsoft-anon-tag           </span><span style="color:#65737e;"># Allow anonymous structs.</span><span style="color:#c0c5ce;">
+            -Wno-unused-command-line-argument </span><span style="color:#65737e;"># stop complainging about the /std:c++14 option</span><span style="color:#c0c5ce;">
+            -Werror
+            -fdiagnostics-absolute-paths
+            -fms-extensions                   </span><span style="color:#65737e;"># Allow anonymous struct as C inheritance.</span><span style="color:#c0c5ce;">
+            -mavx                             </span><span style="color:#65737e;"># AVX.</span><span style="color:#c0c5ce;">
+            -mfma
+        )
+    endif()
+    target_include_directories(${</span><span style="color:#bf616a;">target_name</span><span style="color:#c0c5ce;">} PRIVATE &quot;${</span><span style="color:#bf616a;">TM_SDK_DIR</span><span style="color:#c0c5ce;">}/headers&quot;)
+endmacro(tm_plugin)
+</span></code></pre>
+<p>Then for your projects you're CMakeLists.txt might look something like this:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#96b5b4;">cmake_minimum_required</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">VERSION </span><span style="color:#c0c5ce;">3.15)
+</span><span style="color:#96b5b4;">project</span><span style="color:#c0c5ce;">(Slowgames </span><span style="color:#bf616a;">VERSION </span><span style="color:#c0c5ce;">0.1.0)
+
+</span><span style="color:#96b5b4;">set</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">TM_SDK_DIR </span><span style="color:#c0c5ce;">${</span><span style="color:#bf616a;">PROJECT_SOURCE_DIR</span><span style="color:#c0c5ce;">}/OurMachinery)
+
+</span><span style="color:#b48ead;">include</span><span style="color:#c0c5ce;">(${</span><span style="color:#bf616a;">TM_SDK_DIR</span><span style="color:#c0c5ce;">}/the_machinery.cmake)
+
+</span><span style="color:#bf616a;">tm_plugin</span><span style="color:#c0c5ce;">(cosmic_trash
+    cosmic_trash/src/foo.h
+    cosmic_trash/src/bar.inl
+    cosmic_trash/src/foo.c)
+</span></code></pre>
+<p>The function <code>tm_plugin</code> could easily include a post-build command to run docgen, and even a pre-build command to run hash.</p>
+
+</div>
+
+  </div>
+
+</body>
+
+</html>

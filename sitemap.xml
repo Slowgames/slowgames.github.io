@@ -11,6 +11,12 @@
         <loc>https://slowgames.github.io/tags/</loc>
     </url>
     <url>
+        <loc>https://slowgames.github.io/tags/cmake/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/cmake/page/1/</loc>
+    </url>
+    <url>
         <loc>https://slowgames.github.io/tags/errata/</loc>
     </url>
     <url>
@@ -29,6 +35,30 @@
         <loc>https://slowgames.github.io/tags/the-machinery/page/1/</loc>
     </url>
     <url>
+        <loc>https://slowgames.github.io/tags/tools/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/tools/page/1/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/visual-studio/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/visual-studio/page/1/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/vscode/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/vscode/page/1/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/workflow/</loc>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/tags/workflow/page/1/</loc>
+    </url>
+    <url>
         <loc>https://slowgames.github.io/the-machinery-part1/</loc>
         <lastmod>2020-07-14</lastmod>
     </url>
@@ -43,5 +73,9 @@
     <url>
         <loc>https://slowgames.github.io/the-machinery-part4/</loc>
         <lastmod>2020-07-21</lastmod>
+    </url>
+    <url>
+        <loc>https://slowgames.github.io/the-machinery-part5/</loc>
+        <lastmod>2020-07-26</lastmod>
     </url>
 </urlset>
