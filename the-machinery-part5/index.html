@@ -58,7 +58,9 @@
 <div class="post">
   <h1 class="post-title">Clang-tidy, VS Code, The Machinery... CMake?</h1>
   <span class="post-date">2020-07-26</span>
-  <p>For some developers the topic of static analysis is contentious. But I think it's an important tool to have in your toolbox especially when writing C or C++ code. Unfortunately the tools are either expensive or involve a lot of tip-toeing to avoid the false positives that tend to make developers toss their hands up and just live dangerously.</p>
+  <p><strong>Update (2020-07-29)</strong>: The entire section on problems with build output can be solved by <em>not</em> using a workspace (*.code-workspace). Instead just use a typical settings.json in your .vscode folder. 🤘</p>
+<hr />
+<p>For some developers the topic of static analysis is contentious. But I think it's an important tool to have in your toolbox especially when writing C or C++ code. Unfortunately the tools are either expensive or involve a lot of tip-toeing to avoid the false positives that tend to make developers toss their hands up and just live dangerously.</p>
 <p>But for me I still think it's worth it. I'd rather get clang-tidy running decently enough and periodically adjust what checks are run, or to use a more extensive set of warnings than the typical default for a C++ compiler.</p>
 <p>Rust put a lot of emphasis on warnings for things that wouldn't exactly make code unsound, but definitely helps you write code that is easier to change later. I think clang-tidy and <code>-Wall -Wextra</code> can help when writing C or C++ in the same way.</p>
 <p>More involved static analysis tools are much better suited when you're writing safety-critical code that must conform to standards such as MISRA or AUTOSAR. And in those domains it appears to be relatively common to just use simulink and have it generate your C code and apply futher analysis and proofs after the fact. Or there is Ada/Spark that can be formally verified, then have C code generated from it.</p>
